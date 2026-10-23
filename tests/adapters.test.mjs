@@ -13,3 +13,10 @@ test('compatibility adapter rejects changed upstream table source',async()=>{
   assert.ok(callback);await assert.rejects(()=>callback({path:file}),/needs review/);
  }finally{await rm(root,{recursive:true,force:true});}
 });
+test('AI lifecycle adapter rejects changed upstream source',async()=>{
+ const root=await mkdtemp(path.join(tmpdir(),'milkdown-ai-adapter-test-'));
+ try{const file=path.join(root,'index.js');await writeFile(file,'export const changed = true;');let callback;
+  milkdownSlashPlugin().setup({onLoad(options,fn){if(options.filter.test('/node_modules/@milkdown/crepe/lib/esm/feature/ai/index.js'))callback=fn;}});
+  assert.ok(callback);await assert.rejects(()=>callback({path:file}),/AI disposal adapter needs review/);
+ }finally{await rm(root,{recursive:true,force:true});}
+});

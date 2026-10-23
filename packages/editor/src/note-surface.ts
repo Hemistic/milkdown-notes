@@ -15,6 +15,7 @@ import {streamingPluginKey} from '@milkdown/plugin-streaming';
 import {diffPluginKey} from '@milkdown/plugin-diff';
 import {abortAICmd} from '@milkdown/crepe/feature/ai';
 import {commandsCtx} from '@milkdown/core';
+import {bindResponsiveEditor} from './note-responsive.js';
 
 export type NoteSurfaceOptions=NoteEditingOptions&{readOnly?:boolean;label?:string;highlights?:string[];onTitleChange?:(title:string)=>void;variant?:'document'|'excerpt'};
 function highlightDecorations(doc:ProseNode,highlights:string[]){
@@ -71,8 +72,8 @@ export async function createNoteSurface(host:HTMLElement,markdown:string,onChang
  await editor.remove(strikethroughInputRule);
  await editor.create();
  editor.action(ctx=>titleChanged(ctx.get(editorViewCtx).state.doc));
- const uiCleanup=bindNoteUi(host,options),extensionCleanup=bindNoteExtensions(host,options);const cleanup=()=>{uiCleanup();extensionCleanup();};
+ const uiCleanup=bindNoteUi(host,options),extensionCleanup=bindNoteExtensions(host,options),responsiveCleanup=bindResponsiveEditor(host);const cleanup=()=>{responsiveCleanup();uiCleanup();extensionCleanup();};
  let cachedDoc:unknown,cachedText='';
  readMarkdown=()=>editor.action(ctx=>{const state=ctx.get(editorViewCtx).state,streaming=streamingPluginKey.getState(state),doc=streaming?.active?streaming.originalDoc:state.doc;if(doc!==cachedDoc){cachedText=ctx.get(serializerCtx)(doc);cachedDoc=doc;}return cachedText;});
- return {editor,setMarkdown:(value:string)=>{if(readMarkdown()===value)return;editor.action(ctx=>{const view=ctx.get(editorViewCtx),doc=ctx.get(parserCtx)(value);if(!doc)throw Error('NOTE_PARSE_FAILED');view.dispatch(view.state.tr.replaceWith(0,view.state.doc.content.size,doc.content).setMeta('addToHistory',!options.readOnly));});markdown=value;},setReadOnly:(value:boolean)=>{if(host.dataset.readonly===String(value))return;host.dataset.readonly=String(value);editor.action(ctx=>{const view=ctx.get(editorViewCtx);view.setProps({editable:()=>!value});});},markdown:()=>readMarkdown(),destroy:()=>{if(options.aiProvider)editor.action(ctx=>ctx.get(commandsCtx).call(abortAICmd.key,{keep:false}));cleanup();/* Stop DOM observers before Milkdown removes feature contexts. */editor.action(ctx=>ctx.get(editorViewCtx).destroy());return editor.destroy();}};
+ return {editor,setMarkdown:(value:string)=>{if(readMarkdown()===value)return;editor.action(ctx=>{const view=ctx.get(editorViewCtx),doc=ctx.get(parserCtx)(value);if(!doc)throw Error('NOTE_PARSE_FAILED');view.dispatch(view.state.tr.replaceWith(0,view.state.doc.content.size,doc.content).setMeta('addToHistory',!options.readOnly));});markdown=value;},setReadOnly:(value:boolean)=>{if(host.dataset.readonly===String(value))return;host.dataset.readonly=String(value);editor.action(ctx=>{const view=ctx.get(editorViewCtx);view.setProps({editable:()=>!value});});},markdown:()=>readMarkdown(),destroy:()=>{if(options.aiProvider&&!options.readOnly)editor.action(ctx=>ctx.get(commandsCtx).call(abortAICmd.key,{keep:false}));cleanup();/* Stop DOM observers before Milkdown removes feature contexts. */editor.action(ctx=>ctx.get(editorViewCtx).destroy());return editor.destroy();}};
 }

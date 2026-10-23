@@ -37,7 +37,7 @@ const english:Record<string,string>={
   "开始改写": "Start rewriting",
   "AI 改写方式": "AI rewriting method",
   "等待 AI 改写": "Waiting for AI",
-  "Esc 取消": "Esc Cancel",
+  "Esc 停止并保留": "Esc Stop and keep",
   "接受": "Accept",
   "放弃": "Reject",
   "重新改写": "Retry",

@@ -4,6 +4,25 @@ import {readFile} from 'node:fs/promises';
 // integration points at build time, retaining the upstream menu, commands and
 // block handle. Fail closed if the upstream module changes.
 export const milkdownSlashPlugin=()=>({name:'milkdown-notes-adapters',setup(build){
+ build.onLoad({filter:/[\\/]@milkdown[\\/]crepe[\\/]lib[\\/]esm[\\/]feature[\\/]ai[\\/]index\.js$/},async({path})=>{
+  let contents=await readFile(path,'utf8');
+  const anchor='} finally {\n    const current = ctx.get(aiSessionCtx.key);';
+  if(contents.split(anchor).length!==2)throw Error('Milkdown AI disposal adapter needs review');
+  // A cancelled async iterator may settle after destroy has removed its context.
+  contents=contents.replace(anchor,'} finally {\n    if (!ctx.isInjected(aiSessionCtx.key)) return;\n    const current = ctx.get(aiSessionCtx.key);');
+  const placement='floatingUIOptions: {\n        placement: "bottom"';
+  if(contents.split(placement).length!==2)throw Error('Milkdown AI floating layout adapter needs review');
+  contents=contents.replace(placement,`floatingUIOptions: {
+        strategy: "fixed",
+        middleware: [{name: "noteAIViewport", fn: ({x,y,rects,elements}) => {
+          const host = elements.floating.closest('.mn-note-surface')?.getBoundingClientRect();
+          const left = Math.max(8, (host?.left ?? 0) + 8);
+          const right = Math.min(document.documentElement.clientWidth - 8, (host?.right ?? innerWidth) - 8);
+          return {x: Math.max(left, Math.min(x, right - rects.floating.width)), y: Math.max(8, Math.min(y, innerHeight - rects.floating.height - 8))};
+        }}],
+        placement: "bottom"`);
+  return {contents,loader:'js'};
+ });
  build.onLoad({filter:/[\\/]@milkdown[\\/]components[\\/]lib[\\/]code-block[\\/]index\.js$/},async({path})=>{
   let contents=await readFile(path,'utf8');
   const init='this.dom.className = "milkdown-code-block";',update='this.text.value = node.textContent;';

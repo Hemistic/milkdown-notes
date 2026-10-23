@@ -19,7 +19,8 @@ npm start
 - 无框架集成示例：<http://127.0.0.1:43150/example/>
 - `npm run dev`：构建后启动；当前不含热更新，修改后重新构建并刷新。
 - `npm run typecheck`：TypeScript 检查。
-- `npm test`：3 个聚焦测试，覆盖存储、路径边界和适配失败。
+- `npm test`：8 个聚焦测试，覆盖存储、路径边界、适配失败和 AI provider 流式协议。
+- AI / diff 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；完整结果见 [侧栏与 AI 验收记录](docs/ai-responsive-verification.md)。
 
 笔记保存在 `.data/notes/*.md`，图片保存在 `.data/assets/`，均被 Git 忽略。标题取首个一级标题。导入会新建笔记，导出为 Markdown。更换数据目录和端口：
 

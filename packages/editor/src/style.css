@@ -169,3 +169,24 @@
 .mn-note-surface[data-readonly=true] .milkdown-image-block :is(.image-resize-handle,.operation){display:none!important}
 .mn-note-surface .milkdown-table-block .drag-preview{pointer-events:none;user-select:none}
 .mn-note-surface .mn-note-diagram-preview{background:#fafafa;color:#222;padding:12px;border-radius:6px}
+
+/* Width follows the host, not just the browser: a sidebar can be embedded in a wide page. */
+.mn-note-surface:not(.mn-note-menu-layer){min-width:0;max-width:100%}
+.mn-note-surface .milkdown{min-width:0;max-width:100%}
+.mn-note-surface .milkdown-toolbar{box-sizing:border-box;width:max-content;max-width:min(calc(var(--mn-host-width,100vw) - 12px),calc(100vw - 24px));flex-wrap:wrap}
+.mn-note-surface .milkdown .milkdown-ai-instruction>.ai-instruction{box-sizing:border-box;width:min(320px,calc(var(--mn-host-width,100vw) - 16px),calc(100vw - 24px));max-height:calc(100dvh - 24px);display:flex;flex-direction:column}
+.mn-note-surface .milkdown .ai-instruction-list{min-height:0;max-height:min(320px,45dvh);overflow:auto}
+.mn-note-surface .milkdown .milkdown-ai-instruction{position:fixed;z-index:130}
+.mn-note-surface .milkdown .milkdown-ai-diff-actions{box-sizing:border-box;left:var(--mn-panel-left,50%);bottom:var(--mn-panel-bottom,12px);width:max-content;max-width:min(calc(var(--mn-host-width,100vw) - 16px),calc(100vw - 24px));flex-wrap:wrap;justify-content:center;border-radius:12px;z-index:120;max-height:calc(100dvh - 24px);overflow:auto}
+.mn-note-surface .milkdown .milkdown-ai-diff-actions-btn{padding:8px;min-height:34px;flex:1 0 auto;justify-content:center}
+.mn-note-surface .milkdown:has(>.milkdown-ai-diff-actions[data-show=true]){padding-bottom:150px}
+.mn-note-surface .mn-note-references{box-sizing:border-box;width:min(258px,calc(var(--mn-host-width,100vw) - 12px));max-height:min(280px,50dvh)}
+.mn-note-surface .milkdown-link-edit,.mn-note-surface .milkdown-link-preview{max-width:min(calc(var(--mn-host-width,100vw) - 12px),calc(100vw - 24px));box-sizing:border-box;overflow-wrap:anywhere}
+.mn-note-surface .milkdown-table-block .mn-note-table-toolbar{max-width:100%;flex-wrap:wrap;white-space:normal}
+.mn-note-surface .mn-note-math[data-type=block],.mn-note-surface .katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden}
+.mn-note-surface .milkdown .milkdown-code-block .tools{flex-wrap:wrap;gap:4px}
+.mn-note-surface .milkdown .milkdown-ai-streaming-indicator{box-sizing:border-box;max-width:100%;flex-wrap:wrap;white-space:normal;border-radius:10px}
+.mn-note-surface .milkdown .milkdown-ai-streaming-esc{color:var(--crepe-color-on-surface-variant);line-height:1.4}
+.mn-note-menu-layer.milkdown>.milkdown-slash-menu{box-sizing:border-box;max-width:min(calc(var(--mn-host-width,100vw) - 16px),calc(100vw - 16px))}
+.mn-note-menu-layer.milkdown .milkdown-slash-menu .menu-groups .menu-group li{min-width:0}
+.mn-note-menu-layer.milkdown .milkdown-slash-menu .tab-group ul{flex-wrap:wrap}

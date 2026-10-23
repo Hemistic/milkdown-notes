@@ -24,4 +24,5 @@ await mkdir('apps/local/dist',{recursive:true});
 await build({entryPoints:['apps/local/src/app.ts'],outfile:'apps/local/dist/app.js',bundle:true,format:'esm',target:'es2022',external:['@local/milkdown-notes'],sourcemap:true});
 await cp('apps/local/src/app.css','apps/local/dist/app.css');
 await cp('apps/local/src/index.html','apps/local/dist/index.html');
+await build({entryPoints:['examples/ai-test.ts'],outfile:'apps/local/dist/ai-test.js',bundle:true,format:'esm',target:'es2022',minify:true,plugins:[milkdownSlashPlugin()],legalComments:'linked'});
 console.log('Built reusable editor, local app and browser integration example.');

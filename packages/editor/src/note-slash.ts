@@ -18,6 +18,7 @@ export function clearNoteSlashTrigger(ctx:Ctx){
 }
 export function noteSlashSupport(host:HTMLElement):{plugin:import('@milkdown/ctx').MilkdownPlugin;slashMenu:NonNullable<BlockEditFeatureConfig['slashMenu']>} {
  const root=document.createElement('div');root.className='mn-note-surface milkdown mn-note-menu-layer';
+ const syncSize=()=>root.style.setProperty('--mn-host-width',`${host.getBoundingClientRect().width}px`);
  let dismissed:number|undefined,current:EditorView|undefined;
  const getQuery=(view:EditorView)=>{
   const range=noteSlashRange(view);
@@ -29,9 +30,10 @@ export function noteSlashSupport(host:HTMLElement):{plugin:import('@milkdown/ctx
  const refresh=()=>queueMicrotask(()=>{if(current&&!current.isDestroyed)current.dispatch(current.state.tr.setMeta('addToHistory',false));});
  const reposition=(event:Event)=>{if((!(event.target instanceof Node)||!root.contains(event.target))&&root.querySelector('[data-show=true]'))refresh();};
  const plugin=$prose(()=>new Plugin({props:{handleDOMEvents:{focus:()=>{refresh();return false;},blur:()=>{refresh();return false;}}},view(view){
-  current=view;root.dataset.theme=host.dataset.theme;document.body.append(root);view.dom.addEventListener('keydown',close);document.addEventListener('scroll',reposition,true);document.addEventListener('wheel',reposition,{passive:true});window.addEventListener('resize',reposition);
-  return {update(next){current=next;root.dataset.theme=host.dataset.theme;},destroy(){view.dom.removeEventListener('keydown',close);document.removeEventListener('scroll',reposition,true);document.removeEventListener('wheel',reposition);window.removeEventListener('resize',reposition);root.remove();current=undefined;}};
+  current=view;root.dataset.theme=host.dataset.theme;syncSize();document.body.append(root);view.dom.addEventListener('keydown',close);document.addEventListener('scroll',reposition,true);document.addEventListener('wheel',reposition,{passive:true});window.addEventListener('resize',reposition);
+  const resize=new ResizeObserver(()=>{syncSize();if(root.querySelector('[data-show=true]'))refresh();});resize.observe(host);
+  return {update(next){current=next;root.dataset.theme=host.dataset.theme;},destroy(){resize.disconnect();view.dom.removeEventListener('keydown',close);document.removeEventListener('scroll',reposition,true);document.removeEventListener('wheel',reposition);window.removeEventListener('resize',reposition);root.remove();current=undefined;}};
  }}));
- const slashMenu:NonNullable<BlockEditFeatureConfig['slashMenu']>&{getQuery:typeof getQuery;clearTrigger:typeof clearNoteSlashTrigger}={root,getQuery,clearTrigger:clearNoteSlashTrigger,offset:6,middleware:[{name:'noteViewport',fn:({x,y,rects})=>({x:Math.max(8,Math.min(x,document.documentElement.clientWidth-rects.floating.width-8)),y:Math.max(8,Math.min(y,window.innerHeight-rects.floating.height-8))})}],floatingUIOptions:{strategy:'fixed'}};
+ const slashMenu:NonNullable<BlockEditFeatureConfig['slashMenu']>&{getQuery:typeof getQuery;clearTrigger:typeof clearNoteSlashTrigger}={root,getQuery,clearTrigger:clearNoteSlashTrigger,offset:6,middleware:[{name:'noteViewport',fn:({x,y,rects})=>{const bounds=host.getBoundingClientRect();return{x:Math.max(8,bounds.left+8,Math.min(x,Math.min(bounds.right,document.documentElement.clientWidth)-rects.floating.width-8)),y:Math.max(8,Math.min(y,window.innerHeight-rects.floating.height-8))};}}],floatingUIOptions:{strategy:'fixed'}};
  return {plugin,slashMenu};
 }

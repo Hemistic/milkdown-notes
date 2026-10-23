@@ -17,6 +17,7 @@
   },
   "include": [
     "packages/editor/src/**/*.ts",
-    "apps/local/src/**/*.ts"
+    "apps/local/src/**/*.ts",
+    "examples/ai-test.ts"
   ]
 }
