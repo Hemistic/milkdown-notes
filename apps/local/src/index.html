@@ -1,1 +1,50 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Milkdown Notes · 本地笔记</title><link rel="stylesheet" href="/editor/style.css"><link rel="stylesheet" href="/app.css"><script type="importmap">{"imports":{"@local/milkdown-notes":"/editor/index.js"}}</script></head><body><aside><div class="brand">◈ Milkdown Notes<small>本地 Markdown 工作台</small></div><button id="new">＋ 新建笔记</button><nav id="notes" aria-label="笔记列表"></nav><footer>文件保存在本机<br><a href="/example/">开发者集成示例 ↗</a></footer></aside><main><header><span id="status" role="status">正在加载…</span><div class="tools"><button id="undo">撤销</button><button id="redo">重做</button><button id="preview">阅读</button><button id="import">导入</button><button id="export">导出</button><button id="theme">深色</button><select id="locale" aria-label="编辑器语言"><option value="zh-CN">中文</option><option value="en">English</option></select></div></header><div class="paper"><div id="editor"></div></div><input id="file" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden></main><script type="module" src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Milkdown Notes · 本地笔记</title>
+  <link rel="stylesheet" href="/editor/style.css"><link rel="stylesheet" href="/app.css">
+  <script type="importmap">{"imports":{"@local/milkdown-notes":"/editor/index.js"}}</script>
+</head>
+<body>
+  <div class="menu-anchor" id="menu-anchor">
+    <button id="menu-toggle" aria-label="笔记菜单" aria-expanded="false" aria-controls="app-menu" title="笔记菜单"><span data-icon="menu"></span></button>
+    <nav id="app-menu" aria-label="笔记功能" hidden>
+      <div class="menu-heading">Milkdown Notes<span>专注于此刻的想法</span></div>
+      <button id="new" class="menu-item"><span data-icon="new"></span><span>新建笔记</span></button>
+      <div class="menu-branch">
+        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="history-menu"><span data-icon="history"></span><span>历史笔记</span><span data-icon="chevron" class="chevron"></span></button>
+        <section id="history-menu" class="submenu" aria-label="历史笔记" hidden><div class="submenu-heading">本机保存的笔记</div><div id="notes"></div></section>
+      </div>
+      <div class="menu-divider"></div>
+      <button id="preview" class="menu-item"><span data-icon="read"></span><span class="item-label">阅读模式</span></button>
+      <button id="undo" class="menu-item"><span data-icon="undo"></span><span>撤销</span></button>
+      <button id="redo" class="menu-item"><span data-icon="redo"></span><span>重做</span></button>
+      <div class="menu-divider"></div>
+      <div class="menu-branch">
+        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="file-menu"><span data-icon="file"></span><span>导入与导出</span><span data-icon="chevron" class="chevron"></span></button>
+        <section id="file-menu" class="submenu" aria-label="导入与导出" hidden>
+          <button id="import" class="menu-item"><span data-icon="import"></span><span>导入 Markdown</span></button>
+          <button id="export" class="menu-item"><span data-icon="export"></span><span>导出 Markdown</span></button>
+        </section>
+      </div>
+      <div class="menu-branch">
+        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="settings-menu"><span data-icon="settings"></span><span>偏好设置</span><span data-icon="chevron" class="chevron"></span></button>
+        <section id="settings-menu" class="submenu" aria-label="偏好设置" hidden>
+          <button id="theme" class="menu-item"><span data-icon="moon"></span><span class="item-label">深色外观</span></button>
+          <div class="menu-divider"></div>
+          <div class="submenu-heading">编辑器语言</div>
+          <button id="locale-zh" class="menu-item" aria-pressed="true"><span data-icon="language"></span><span>中文</span><span data-icon="check" class="selected-mark"></span></button>
+          <button id="locale-en" class="menu-item" aria-pressed="false"><span data-icon="language"></span><span>English</span><span data-icon="check" class="selected-mark"></span></button>
+        </section>
+      </div>
+      <div class="menu-divider"></div>
+      <a class="menu-item developer-link" href="/example/"><span data-icon="code"></span><span>集成示例</span><span data-icon="external" class="chevron"></span></a>
+      <div class="menu-footer"><span data-icon="saved"></span><span id="status" role="status">正在加载…</span></div>
+    </nav>
+  </div>
+  <main><div class="paper"><div id="editor"></div></div></main>
+  <input id="file" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
