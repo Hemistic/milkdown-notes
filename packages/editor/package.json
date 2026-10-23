@@ -1,0 +1,56 @@
+{
+  "name": "@local/milkdown-notes",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": {
+      "types": "./dist/style.css.d.ts",
+      "default": "./dist/style.css"
+    }
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "dependencies": {
+    "@codemirror/language": "6.13.1",
+    "@codemirror/language-data": "6.5.2",
+    "@lezer/highlight": "1.2.5",
+    "micromark-util-types": "2.0.3",
+    "micromark-util-classify-character": "2.0.1",
+    "micromark-util-resolve-all": "2.0.1",
+    "micromark-util-chunked": "2.0.1",
+    "unified": "11.0.5",
+    "remark-parse": "11.0.0",
+    "@milkdown/preset-gfm": "7.22.3",
+    "@milkdown/utils": "7.22.3",
+    "@milkdown/prose": "7.22.3",
+    "@milkdown/core": "7.22.3",
+    "@milkdown/ctx": "7.22.3",
+    "mermaid": "11.12.1",
+    "dompurify": "3.4.17",
+    "marked": "18.1.0",
+    "remark-math": "6.0.0",
+    "katex": "0.19.0",
+    "@milkdown/plugin-slash": "7.22.3",
+    "@milkdown/crepe": "7.22.3",
+    "@milkdown/plugin-tooltip": "7.22.3",
+    "@milkdown/preset-commonmark": "7.22.3",
+    "@milkdown/components": "7.22.3",
+    "@milkdown/plugin-streaming": "7.22.3",
+    "@milkdown/plugin-diff": "7.22.3",
+    "lucide": "1.49.0"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

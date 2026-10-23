@@ -1,0 +1,73 @@
+{
+  "sourceVersion": "0.13.41",
+  "files": [
+    {
+      "source": "src\\whiteboard\\note-ui.ts",
+      "sha256": "0197f5cb3ece8b811273d8e31baff02d50dcc1a591022f31a3be4c196cc4e998"
+    },
+    {
+      "source": "src\\whiteboard\\note-surface.ts",
+      "sha256": "e42369ed2ced09ab77295c5683a3c2746dbdf5784f3f5fd709788691451b81e8"
+    },
+    {
+      "source": "src\\whiteboard\\note-table.ts",
+      "sha256": "b97c9c7600c4714ad5197bc6be2b22d02bb35ea07c955676e29c9c4abc915ad2"
+    },
+    {
+      "source": "src\\whiteboard\\note-code.ts",
+      "sha256": "b794c680e9d3266e53731f4d380167376d7985dc9a39c4d31aa54a2c87493f3b"
+    },
+    {
+      "source": "src\\whiteboard\\note-html.ts",
+      "sha256": "ad8b3e17bb61f7825f0d8df4a51ec934f4313375816add7e6376fc476600ab9b"
+    },
+    {
+      "source": "src\\whiteboard\\note-extension-markdown.ts",
+      "sha256": "13f7a61ad72fc0bc74f9d0c1aa0a63e1a17227c3790092793215d9543d20b93d"
+    },
+    {
+      "source": "src\\whiteboard\\note-extensions.ts",
+      "sha256": "b3afcd469803a0025a85e344de50738345b612ce2dd4687e783161efcbbb89a0"
+    },
+    {
+      "source": "src\\whiteboard\\note-references.ts",
+      "sha256": "f4769b586216c700b3ca403a5706e25ffffba65f9754b43bcccfd8bef82a2f6b"
+    },
+    {
+      "source": "src\\whiteboard\\note-selection-toolbar.ts",
+      "sha256": "da11d4e003c218d25926f7c672e45dea4a92f079500f0969bf09da5e6633a088"
+    },
+    {
+      "source": "src\\whiteboard\\note-slash.ts",
+      "sha256": "f6a9126944a1e814033a1f299f6cd890022485237752d3f69f6e3ef60f15ffb0"
+    },
+    {
+      "source": "src\\whiteboard\\note-slash-commands.ts",
+      "sha256": "ab9b2c58c6c6a7fa33cbc5fc0661773173c8836644945d43c8fb366f5dad6c6e"
+    },
+    {
+      "source": "src\\whiteboard\\note-math.ts",
+      "sha256": "e3aab2ea9ba874eced70e9041b3ced1f8764a23c24e4c2be7f991cad5b515fee"
+    },
+    {
+      "source": "src\\whiteboard\\note-ui-icons.ts",
+      "sha256": "d25830d78fea5b28aedeabd27afaa893c5a7817285f35e2bceab9a6050127438"
+    },
+    {
+      "source": "src/whiteboard/note-ui-theme.css",
+      "sha256": "189a7658b33a1a677dfd173252f3951a8616c6b02ca27c1f69f4a40343252e32"
+    },
+    {
+      "source": "scripts/milkdown-slash.mjs",
+      "sha256": "32a5ad47886370d12d33582e714afaedf39f45dff321be667f92af6337750bd4"
+    },
+    {
+      "source": "src/shared/ui-language-en.json",
+      "sha256": "89c2e6db0bdceda2b389e380acee39e7284915845ced2a62f303c0ac0ca327aa"
+    },
+    {
+      "source": "LICENSE",
+      "sha256": "1068db0b1d352e1f7a733baa0dfd1ff4882be347781a57b3540799332b82ec55"
+    }
+  ]
+}

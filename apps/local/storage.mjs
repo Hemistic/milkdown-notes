@@ -1,0 +1,15 @@
+import {mkdir,readFile,writeFile,rename,readdir,unlink} from 'node:fs/promises';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+export function createStorage(root) {
+  const notes=path.resolve(root,'notes'), assets=path.resolve(root,'assets');
+  const valid=id=>{if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id))throw Error('Invalid note ID');return id;};
+  return {
+    async init(){await mkdir(notes,{recursive:true});await mkdir(assets,{recursive:true});},
+    async list(){return Promise.all((await readdir(notes)).filter(f=>f.endsWith('.md')).sort().map(async f=>{const markdown=await readFile(path.join(notes,f),'utf8');return{id:f.slice(0,-3),title:/^#\s+(.+)$/m.exec(markdown)?.[1]??f.slice(0,-3)};}));},
+    async read(id){return readFile(path.join(notes,valid(id)+'.md'),'utf8');},
+    async write(id,markdown){const file=path.join(notes,valid(id)+'.md'),tmp=file+'.'+randomUUID()+'.tmp';try{await writeFile(tmp,markdown,'utf8');await rename(tmp,file);}catch(error){await unlink(tmp).catch(()=>{});throw error;}},
+    async image(buffer,extension){if(!['png','jpg','webp','gif'].includes(extension))throw Error('Unsupported image');const name=randomUUID()+'.'+extension;await writeFile(path.join(assets,name),buffer);return '/assets/'+name;},
+    assets,
+  };
+}
