@@ -1,4 +1,5 @@
 import {createNoteSurface} from '../packages/editor/src/note-surface.js';
+import {bindBlockSource} from '../packages/editor/src/note-source.js';
 import {mountEditor} from '../packages/editor/src/index.js';
 import {commandsCtx,editorViewCtx} from '@milkdown/core';
 import {TextSelection} from '@milkdown/prose/state';
@@ -60,6 +61,34 @@ async function suite(){
     await test('销毁时取消、清理 UI，重新挂载可运行',async()=>{let signal:AbortSignal|undefined;const s=await fresh(async function*(c,sig){signal=sig;yield* provider(replacement,'slow')(c,sig);});run(s);await delay(130);await s.destroy();current=undefined;assert(signal?.aborted,'销毁未取消');await delay(150);assert(!$('test-host').querySelector('.milkdown-ai-diff-actions'),'AI UI 未清理');const next=await fresh();run(next);await until(()=>review(next)?.active);accept(next);assert(next.markdown().includes('改写后'),'重新挂载失败');});
     await test('只读和无 provider 隐藏 AI 入口',async()=>{await current?.destroy();current=undefined;for(const readOnly of [false,true]){$('test-host').replaceChildren();const editor=await mountEditor($('test-host'),{markdown:source,readOnly,...(readOnly?{aiProvider:provider()}:{} )});assert(!$('test-host').querySelector('[aria-label="AI 改写"]'),'不应显示 AI');await editor.destroy();}});
     await test('失败后重新请求清除旧错误提示',async()=>{let calls=0;const s=await fresh(async function*(c,signal){yield* provider(replacement,calls++?'normal':'error')(c,signal);});run(s);await until(()=>$('test-host').querySelector('.mn-note-ai-error'));await until(()=>!streaming(s)?.active);run(s);await until(()=>review(s)?.active);assert(!$('test-host').querySelector('.mn-note-ai-error'),'旧错误仍显示');reject(s);});
+    await test('三击源码：开关、Esc 取消、按块提交、撤销重做',async()=>{
+      await current?.destroy();current=undefined;$('test-host').replaceChildren();
+      const e=await mountEditor($('test-host'),{markdown:'# 标题\n\n保留这一段。\n',locale:'zh-CN'});
+      try{
+        const reveal=()=>{$('test-host').querySelector('h1')!.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:3}));return $('test-host').querySelector<HTMLTextAreaElement>('.mn-block-source');};
+        assert(!reveal(),'关闭状态仍显示源码');e.setSourceReveal(true);
+        let area=reveal()!;await delay(40);assert(area?.value==='# 标题','没有序列化当前块');assert(area.getBoundingClientRect().width>100&&area.getBoundingClientRect().left>=$('test-host').getBoundingClientRect().left,'DOM 更新后源码定位丢失');area.value='# 不应保存';area.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(e.getMarkdown().includes('# 标题'),'Esc 未取消');
+        area=reveal()!;area.value='## 修改后的标题';area.dispatchEvent(new Event('input',{bubbles:true}));area.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true}));
+        assert(e.getMarkdown().includes('## 修改后的标题')&&e.getMarkdown().includes('保留这一段'),'块提交破坏其他内容');assert(e.undo()&&e.getMarkdown().includes('# 标题'),'源码不能撤销');assert(e.redo()&&e.getMarkdown().includes('## 修改后的标题'),'源码不能重做');
+      }finally{await e.destroy();}
+    });
+    await test('源码：失焦提交、关闭/销毁清理、只读保护',async()=>{
+      for(const readOnly of [false,true]){
+        $('test-host').replaceChildren();const e=await mountEditor($('test-host'),{markdown:'原文\n',sourceReveal:true,readOnly,spellcheck:true});
+        try{
+          $('test-host').querySelector('.ProseMirror p')!.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:3}));const area=$('test-host').querySelector<HTMLTextAreaElement>('.mn-block-source')!;
+          assert(area&&area.readOnly===readOnly&&area.spellcheck,'只读/拼写状态错误');area.value='新文';area.dispatchEvent(new Event('blur'));
+          assert(e.getMarkdown().includes(readOnly?'原文':'新文'),'失焦或只读行为错误');
+          $('test-host').querySelector('.ProseMirror p')!.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:3}));e.setSourceReveal(false);assert(!$('test-host').querySelector('.mn-block-source'),'关闭未清理');e.setSpellcheck(false);assert(!$('test-host').querySelector<HTMLElement>('.ProseMirror')!.spellcheck,'拼写开关未同步');
+        }finally{await e.destroy();}
+        assert(!document.querySelector('style[data-mn-source]'),'销毁遗留源码样式');
+      }
+    });
+    await test('AI 流式和 diff 审查期间禁止源码越过编辑锁',async()=>{
+      const s=await fresh(provider(replacement,'slow'));const blockSource=bindBlockSource($('test-host'),s.editor,{sourceReveal:true});
+      const triple=()=>{$('test-host').querySelector('.ProseMirror p')!.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:3}));return $('test-host').querySelector('.mn-block-source');};
+      try{run(s);await until(()=>!!streaming(s)?.active);assert(!triple(),'流式期间允许源码编辑');await until(()=>review(s)?.active);assert(!triple(),'diff 期间允许源码编辑');reject(s);assert(triple(),'结束 diff 后源码未解锁');}finally{blockSource.destroy();}
+    });
     await test('异步生命周期无未处理异常',async()=>{await delay(200);assert(unhandled.length===0,unhandled.join('; '));});
   }finally{await current?.destroy();$('test-host').replaceChildren();($('suite') as HTMLButtonElement).disabled=false;$('status').textContent=`回归完成：${passed} 通过，${failed} 失败（本地固定流式数据）`;}
 }

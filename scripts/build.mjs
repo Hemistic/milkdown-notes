@@ -17,12 +17,12 @@ for(const dir of ['packages/editor/dist','apps/local/dist'])await rm(resolve(wor
 await mkdir(`${root}/dist`,{recursive:true});
 const js=await build({entryPoints:[`${root}/src/index.ts`],outdir:`${root}/dist`,bundle:true,format:'esm',splitting:true,platform:'browser',target:'es2022',minify:true,plugins:[milkdownSlashPlugin()],legalComments:'linked',chunkNames:'chunks/[name]-[hash]',metafile:true});
 const css=await build({entryPoints:[`${root}/src/style.css`],outfile:`${root}/dist/style.css`,bundle:true,minify:true,loader:{'.woff2':'file','.woff':'file','.ttf':'file'},assetNames:'fonts/[name]-[hash]',legalComments:'linked',metafile:true});
-await writeNotices([...Object.keys(js.metafile.inputs),...Object.keys(css.metafile.inputs)]);
 await writeFile(`${root}/dist/style.css.d.ts`,'export {};\n');
 execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--project','packages/editor/tsconfig.build.json'],{stdio:'inherit'});
 await mkdir('apps/local/dist',{recursive:true});
-await build({entryPoints:['apps/local/src/app.ts'],outfile:'apps/local/dist/app.js',bundle:true,format:'esm',target:'es2022',external:['@local/milkdown-notes'],sourcemap:true});
-await cp('apps/local/src/app.css','apps/local/dist/app.css');
+const app=await build({entryPoints:['apps/local/src/app.ts'],outfile:'apps/local/dist/app.js',bundle:true,format:'esm',target:'es2022',external:['@local/milkdown-notes'],sourcemap:true,metafile:true});
+await build({entryPoints:['apps/local/src/app.css'],outfile:'apps/local/dist/app.css',bundle:true,loader:{'.woff2':'file','.ttf':'file'},assetNames:'fonts/[name]-[hash]'});
 await cp('apps/local/src/index.html','apps/local/dist/index.html');
+await writeNotices([...Object.keys(js.metafile.inputs),...Object.keys(css.metafile.inputs),...Object.keys(app.metafile.inputs)]);
 await build({entryPoints:['examples/ai-test.ts'],outfile:'apps/local/dist/ai-test.js',bundle:true,format:'esm',target:'es2022',minify:true,plugins:[milkdownSlashPlugin()],legalComments:'linked'});
 console.log('Built reusable editor, local app and browser integration example.');

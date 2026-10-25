@@ -1,0 +1,24 @@
+{
+  "source": "D:/Project/pdf-ai/electron/markdown-notes/src",
+  "sha256": {
+    "components\\StatusBar.tsx": "e22ec38fa2441cf69a9535b079f3504019338c178ed04d5ee88ec8d5f29055bc",
+    "index.css": "f484e1e4b119a75a595794b5418c3ce8f9e61d6dc0bbb31d41dbe09d0cc1f548",
+    "App.tsx": "37cc0555cdbce8baee1c898891b502eee575838da208ca6eb359557cc4c7a3c4",
+    "components\\Editor.tsx": "58f2bf4dcb4f1112b2090f387640170a3218ce85b697d649a605471369da68fe",
+    "lib\\markdown.ts": "312a155d623eef58811776df6def2a2d5e4ada0cb953cdfea79c82d042125490"
+  },
+  "adaptations": [
+    "StatusBar: local type import; reuse snapshot import row in standalone file menu",
+    "CSS: original statusbar/outline rules; host placement and narrow-width overflow in host.css",
+    "App editor modes and Editor block-source transactions adapted to standalone lifecycle",
+    "Original inline SVG paths and fonts reused; no redrawn icons"
+  ],
+  "fontSource": "D:/Project/pdf-ai/electron/ai-sidebar/src/claudian-sidebar-style/fonts",
+  "fonts": {
+    "CrimsonText-Regular.ttf": "48e6c5d5ad1d01599d374ecb817e15890d1feb3b8a3a88e527d44c90389e1f06",
+    "CrimsonText-SemiBold.ttf": "802e84000740fec2a9fbe0ae09b6b6811bd86a78a0173b15d44450a1530e9410",
+    "OFL-CrimsonText.txt": "3bc287586edfbc9d64f46e6e88bc5cf19a54220a5b868c12d50f7cd6af8db14c",
+    "OFL-NotoSerifSC.txt": "1efbdc9cb2d98aaa844574b5123f8d5233532c214ba259e1536e1d5702d058a1",
+    "SourceHanSerifSC-SemiBold-CN.woff2": "510f6000da6f04a1ef48b0e6339c540c603c371f1b415829ff58ad98499717f0"
+  }
+}

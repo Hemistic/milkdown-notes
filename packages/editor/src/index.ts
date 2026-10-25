@@ -4,6 +4,7 @@ import type {NoteEditingOptions} from './note-references.js';
 import {editorViewCtx} from '@milkdown/core';
 import {undo, redo, closeHistory} from '@milkdown/prose/history';
 import {settleNoteDiagrams} from './note-extensions.js';
+import {bindBlockSource} from './note-source.js';
 export type {NoteReference} from './note-references.js';
 export type {AIProvider} from '@milkdown/crepe/feature/ai';
 
@@ -15,6 +16,8 @@ export type EditorOptions = Omit<NoteEditingOptions, 'menuToolbar'> & {
   markdown?: string;
   theme?: 'light'|'dark';
   onChange?: (markdown: string) => void;
+  sourceReveal?: boolean;
+  spellcheck?: boolean;
 };
 export interface NoteEditor {
   getMarkdown(): string;
@@ -25,6 +28,8 @@ export interface NoteEditor {
   undo(): boolean;
   redo(): boolean;
   setTheme(theme: 'light'|'dark'): void;
+  setSourceReveal(enabled:boolean):void;
+  setSpellcheck(enabled:boolean):void;
   /** Resolves when diagrams requested by the current document finish. */
   settled(): Promise<void>;
   destroy(): Promise<void>;
@@ -48,16 +53,19 @@ export async function mountEditor(host: HTMLElement, options: EditorOptions = {}
   try { surface=await createNoteSurface(host,options.markdown??'',emit,{},options); }
   catch(error){releaseLocale();mounted.delete(host);host.replaceChildren();host.className=originalClass;throw error;}
   const assertLive=()=>{if(disposed)throw Error('Editor has been destroyed');};
+  const source=bindBlockSource(host,surface.editor,options);
   const command=(fn:typeof undo)=>{assertLive();if(options.readOnly)return false;return surface.editor.action(ctx=>{const view=ctx.get(editorViewCtx);return fn(view.state,view.dispatch);});};
   return {
     getMarkdown(){assertLive();return surface.markdown();},
-    setMarkdown(value){assertLive();surface.editor.action(ctx=>{const v=ctx.get(editorViewCtx);v.dispatch(closeHistory(v.state.tr));});surface.setMarkdown(value);surface.editor.action(ctx=>{const v=ctx.get(editorViewCtx);v.dispatch(closeHistory(v.state.tr));});},
+    setMarkdown(value){assertLive();source.cancel();surface.editor.action(ctx=>{const v=ctx.get(editorViewCtx);v.dispatch(closeHistory(v.state.tr));});surface.setMarkdown(value);surface.editor.action(ctx=>{const v=ctx.get(editorViewCtx);v.dispatch(closeHistory(v.state.tr));});},
     onChange(fn){assertLive();listeners.add(fn);return()=>listeners.delete(fn);},
     focus(){assertLive();surface.editor.action(ctx=>ctx.get(editorViewCtx).focus());},
     undo:()=>command(undo),redo:()=>command(redo),
     setTheme(theme){assertLive();host.dataset.theme=theme;},
+    setSourceReveal(value){assertLive();source.setEnabled(value);},
+    setSpellcheck(value){assertLive();source.setSpellcheck(value);},
     settled:()=>settleNoteDiagrams(host),
-    async destroy(){if(disposed)return;disposed=true;listeners.clear();try{await surface.destroy();}finally{host.replaceChildren();host.className=originalClass;delete host.dataset.readonly;if(originalTheme===null)delete host.dataset.theme;else host.dataset.theme=originalTheme;mounted.delete(host);releaseLocale();}},
+    async destroy(){if(disposed)return;source.destroy();disposed=true;listeners.clear();try{await surface.destroy();}finally{host.replaceChildren();host.className=originalClass;delete host.dataset.readonly;if(originalTheme===null)delete host.dataset.theme;else host.dataset.theme=originalTheme;mounted.delete(host);releaseLocale();}},
   };
 }
 /** Read-only uses exactly the same schema, node views and styles. */

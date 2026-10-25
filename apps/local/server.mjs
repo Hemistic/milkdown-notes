@@ -20,6 +20,7 @@ http.createServer(async(req,res)=>{
       const id=route.slice(11);
       if(req.method==='GET')return reply(200,{id,markdown:await storage.read(id)});
       if(req.method==='PUT'){const markdown=(await body(req)).toString('utf8');await storage.write(id,markdown);return reply(200,{id,saved:true});}
+      if(req.method==='PATCH'){const {title}=JSON.parse((await body(req)).toString('utf8'));await storage.rename(id,title);return reply(200,{id,renamed:true});}
     }
     if(route==='/api/images'&&req.method==='POST'){
       const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'}[req.headers['content-type']];

@@ -1456,6 +1456,20 @@
     "licenseTextPresent": true
   },
   {
+    "name": "react",
+    "version": "19.2.5",
+    "license": "MIT",
+    "notice": "react.txt",
+    "licenseTextPresent": true
+  },
+  {
+    "name": "react-dom",
+    "version": "19.2.5",
+    "license": "MIT",
+    "notice": "react-dom.txt",
+    "licenseTextPresent": true
+  },
+  {
     "name": "remark-gfm",
     "version": "4.0.1",
     "license": "MIT",
@@ -1509,6 +1523,13 @@
     "version": "4.6.6",
     "license": "MIT",
     "notice": "roughjs.txt",
+    "licenseTextPresent": true
+  },
+  {
+    "name": "scheduler",
+    "version": "0.27.0",
+    "license": "MIT",
+    "notice": "scheduler.txt",
     "licenseTextPresent": true
   },
   {

@@ -65,3 +65,8 @@ const dispose = () => { stopped = true; void ready.then(editor => editor.destroy
 图片解析后拒绝可执行协议；支持 HTTP(S)、blob、常见位图 data URL 和相对路径。远程图片是否允许由宿主策略决定。`onLink` / `onReference` 是宿主导航边界，宿主应验证自身可接受的目的地。
 
 本地服务仅监听 loopback，检查 Host 和修改请求 Origin；默认不是远程部署服务。保存使用临时文件和 rename。当前是单用户、单活动编辑会话设计：多标签页或外部编辑器同时写同一文件会最后写入覆盖，不提供锁或冲突 UI。Markdown 导出不把图片打包，备份时一起复制 `.data/assets`。
+# 块源码与拼写控制
+
+`mountEditor` 新增可选 `sourceReveal`、`spellcheck` 布尔参数，默认关闭。实例方法 `setSourceReveal(boolean)`、`setSpellcheck(boolean)` 可随时切换。三击当前顶层块显示 Markdown；失焦、Ctrl/Cmd+Enter 或 Ctrl/Cmd+S 提交，Esc 取消。提交是一个可撤销事务。只读实例仅查看源码；AI 流式与 diff 审查期间不允许打开源码编辑。
+
+`setMarkdown` 会取消未提交的块源码，避免旧草稿覆盖新文档。底栏属于 `apps/local`，React 仅用于复用原底栏，编辑器包仍可在无框架宿主中使用。宿主如有底部固定 UI，可在编辑器元素上设置 `--mn-viewport-bottom:30px`，使 AI 浮层留出底部空间。

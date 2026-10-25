@@ -88,3 +88,11 @@ Markdown 会被规范化，非逐字节往返。图片尺寸使用标题后缀 `
 请结合 [实际验收记录](docs/verification.md) 判断已验证范围。AI 网络服务、浏览器全矩阵、大文档性能、多人协作不属于本轮已完成验收。
 
 更多：[宿主 API](docs/integration.md) · [架构边界](docs/architecture.md) · [Milkdown 适配明细](docs/upstream-adapters.md) · [来源与许可](docs/attribution.md)
+
+## Artifact 快照底栏
+
+本地应用复用 Artifact Markdown 快照的 `StatusBar.tsx`、30px 底栏样式、13 种原始 SVG 和原字体。大纲、主题、正常/专注/打字机模式、三击块源码、拼写与统计切换均已接通。文件菜单支持重命名、打开 Markdown、导出 Markdown/HTML 和浏览器 PDF 打印。窄于完整按钮组的侧栏保留按钮尺寸，通过滚轮、触控或键盘横向访问。
+
+重命名保存显示/导出名称，稳定 ID 和正文不变；名称元数据位于 `.data/notes/<id>.md.json`。导出的 HTML 内嵌样式、字体和本机图片，保留公式与图表。PDF 使用浏览器打印的“另存为 PDF”，不是 Electron 的原生 `printToPDF`；当前内置浏览器只验证了调用，未验证 PDF 文件保存。原组件的“在 ArtInFact 中打开”宿主回调仍保留，独立应用没有对应宿主，因此不显示此按钮。
+
+来源哈希、适配说明和字体来源位于 `apps/local/src/artifact/provenance.json`。构建、类型检查、9 项 Node 测试及 `/example/ai.html` 的 21 项浏览器回归通过；AI 测试使用固定流式数据，不代表真实模型服务验收。

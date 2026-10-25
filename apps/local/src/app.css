@@ -1,3 +1,5 @@
+@import './artifact/statusbar.css';
+@import './artifact/host.css';
 *{box-sizing:border-box}
 :root{color-scheme:light;--page:#fff;--ink:#28332f;--muted:#88918b;--panel:#fff;--hover:#f0f4f1;--line:#e9ede9;--accent:#416c59;--shadow:0 12px 45px #182b2012,0 2px 8px #182b2008}
 body{margin:0;background:var(--page);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}

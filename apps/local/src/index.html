@@ -43,7 +43,9 @@
       <div class="menu-footer"><span data-icon="saved"></span><span id="status" role="status">正在加载…</span></div>
     </nav>
   </div>
-  <main><div class="paper"><div id="editor"></div></div></main>
+  <div id="document-layout"><aside id="outline" class="artifact-chrome outline-panel" aria-label="文档大纲" hidden><div class="outline-panel-title">大纲</div><div class="outline-list"></div></aside><main id="editor-pane"><div class="paper"><div id="editor"></div></div></main></div>
+  <div id="statusbar-root" class="artifact-chrome"></div>
+  <dialog id="rename-dialog" class="artifact-chrome"><form method="dialog"><label for="rename-name">重命名 Markdown</label><input id="rename-name" name="name" required maxlength="200" autocomplete="off"><div><button value="cancel" formnovalidate>取消</button><button value="save">保存</button></div></form></dialog>
   <input id="file" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
   <script type="module" src="/app.js"></script>
 </body>

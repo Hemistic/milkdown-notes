@@ -23,3 +23,14 @@ test('image storage returns a portable relative resource URL',async()=>{
   try{const storage=createStorage(root);await storage.init();const bytes=Buffer.from([137,80,78,71]);const url=await storage.image(bytes,'png');assert.match(url,/^\/assets\/[a-f0-9-]+\.png$/);assert.deepEqual(await readFile(path.join(root,url)),bytes);await assert.rejects(()=>storage.image(bytes,'html'),/Unsupported image/);}
   finally{await rm(root,{recursive:true,force:true});}
 });
+test('rename persists the display/export name without changing Markdown, IDs or wiki references',async()=>{
+  const root=await mkdtemp(path.join(tmpdir(),'milkdown-notes-rename-test-'));
+  try{
+    const storage=createStorage(root);await storage.init();const markdown='# Original\n\n[[stable-id]]\n';await storage.write('stable-id',markdown);
+    await storage.rename('stable-id','重命名测试');
+    const reopened=createStorage(root);assert.deepEqual(await reopened.list(),[{id:'stable-id',title:'重命名测试'}]);assert.equal(await reopened.read('stable-id'),markdown);
+    await reopened.write('stable-id',markdown+'\nMore');assert.equal((await reopened.list())[0].title,'重命名测试');
+    for(const bad of ['', '  ', '../outside', 'bad\\name', 'bad\u0000name', 'a'.repeat(201)])await assert.rejects(()=>storage.rename('stable-id',bad),/Invalid Markdown name/);
+    await assert.rejects(()=>storage.rename('missing','title'),/ENOENT/);await assert.rejects(()=>storage.rename('../outside','title'),/Invalid note ID/);
+  }finally{await rm(root,{recursive:true,force:true});}
+});

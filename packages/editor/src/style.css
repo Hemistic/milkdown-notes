@@ -1,4 +1,7 @@
 @import '@milkdown/crepe/theme/common/style.css';
+.mn-note-document{position:relative}
+.mn-block-source{position:absolute;z-index:24;display:block;box-sizing:border-box;min-width:0;margin:0;padding:2px 4px;border:0;border-bottom:1px solid #b9573a88;border-radius:0;resize:none;color:inherit;font:13px/1.58 'Cascadia Mono','Sarasa Mono SC',Consolas,monospace;tab-size:2;background:color-mix(in srgb,#fffdfa 56%,transparent);caret-color:#b9573a;outline:none;overflow:hidden;white-space:pre-wrap}
+[data-theme=dark] .mn-block-source{background:color-mix(in srgb,#2c2c2a 56%,transparent)}
 /* The portal inherits Milkdown's menu theme, but must never paint over the canvas. */
 .mn-note-surface.mn-note-menu-layer{position:fixed;inset:auto;top:0;left:0;width:0;height:0;min-width:0;min-height:0;margin:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible;z-index:1000;pointer-events:none}
 .mn-note-menu-layer>.milkdown-slash-menu{position:fixed;pointer-events:auto;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto}

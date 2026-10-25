@@ -13,11 +13,13 @@
     "types": [
       "node"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "jsx": "react-jsx"
   },
   "include": [
     "packages/editor/src/**/*.ts",
     "apps/local/src/**/*.ts",
-    "examples/ai-test.ts"
+    "examples/ai-test.ts",
+    "apps/local/src/**/*.tsx"
   ]
 }
