@@ -1,9 +1,10 @@
 @import './artifact/statusbar.css';
 @import './artifact/host.css';
 *{box-sizing:border-box}
-:root{color-scheme:light;--page:#fff;--ink:#28332f;--muted:#88918b;--panel:#fff;--hover:#f0f4f1;--line:#e9ede9;--accent:#416c59;--shadow:0 12px 45px #182b2012,0 2px 8px #182b2008}
-body{margin:0;background:var(--page);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
-body[data-theme=dark]{color-scheme:dark;--page:#151515;--ink:#dce5df;--muted:#919d94;--panel:#202421;--hover:#2c342e;--line:#343c36;--accent:#b1d7c6;--shadow:0 12px 45px #0005}
+:root{--mn-font-ui:'PDF AI Crimson Text','PDF AI Source Han Serif SC','Noto Serif SC','Microsoft YaHei UI',serif}
+body{--page:var(--mn-page);--ink:var(--mn-text);--muted:var(--mn-muted);--panel:var(--mn-panel);--hover:var(--mn-hover);--line:var(--mn-border);--accent:var(--mn-accent);--shadow:var(--mn-shadow-strong);scrollbar-color:var(--mn-scrollbar) transparent}
+::selection{background:var(--mn-selection);color:var(--mn-selection-text)}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.5 var(--mn-font-ui);min-height:100vh}
 button,a{-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
@@ -15,7 +16,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .menu-anchor>*{pointer-events:auto}
 #menu-toggle{display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid transparent;border-radius:10px;color:var(--muted);background:var(--page);transition:background .15s,color .15s,box-shadow .15s}
 #menu-toggle:hover,#menu-toggle[aria-expanded=true]{background:var(--hover);color:var(--ink);border-color:var(--line)}
-#menu-toggle[data-error=true]{color:#c04838;border-color:currentColor}
+#menu-toggle[data-error=true]{color:var(--mn-danger);border-color:currentColor}
 [data-icon]{display:inline-flex;align-items:center;justify-content:center;flex:none}
 [data-icon] svg{width:17px;height:17px;display:block}
 #menu-toggle svg{width:20px;height:20px}

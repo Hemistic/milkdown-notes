@@ -5,6 +5,7 @@ const escape=(text:string)=>text.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 async function dataUrl(url:string){const response=await fetch(url);if(!response.ok)throw Error('无法导出资源：'+url);const blob=await response.blob();return new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(blob);});}
 /** Export the actual rendered schema (including math/diagrams), with local assets embedded. */
 export async function exportHtml(host:HTMLElement,title:string){
+  const theme=host.dataset.theme==='dark'?'dark':'light';
   const source=host.querySelector('.ProseMirror');if(!source)throw Error('编辑器尚未就绪');const copy=source.cloneNode(true) as HTMLElement;
   copy.querySelectorAll('.ProseMirror-widget,.prosemirror-virtual-cursor,.milkdown-toolbar,.tools,.handle,.mn-note-selection-toolbar,.mn-note-math-source').forEach(el=>el.remove());
   copy.removeAttribute('role');copy.removeAttribute('aria-label');
@@ -12,11 +13,16 @@ export async function exportHtml(host:HTMLElement,title:string){
   copy.querySelectorAll<HTMLAnchorElement>('a[data-note-heading]').forEach(link=>{const heading=headings[Number(link.dataset.noteHeading)];if(heading){if(!heading.id)heading.id='note-heading-'+link.dataset.noteHeading;link.href='#'+heading.id;}});
   for(const el of [copy,...copy.querySelectorAll<HTMLElement>('*')]){el.removeAttribute('contenteditable');el.removeAttribute('tabindex');el.removeAttribute('draggable');el.removeAttribute('data-mn-source-block');}
   await Promise.all(Array.from(copy.querySelectorAll('img')).map(async img=>{if(img.src.startsWith(location.origin+'/assets/'))img.src=await dataUrl(img.src);}));
-  let css=await(await fetch('/editor/style.css')).text();
-  const urls=[...new Set([...css.matchAll(/url\(([^)]+)\)/g)].map(match=>match[1].replace(/^['"]|['"]$/g,'')))];
-  for(const url of urls){if(url.startsWith('data:')||url.startsWith('#'))continue;const full=new URL(url,location.origin+'/editor/style.css');if(full.origin===location.origin)css=css.split(url).join(await dataUrl(full.href));}
+  async function embedCss(css:string,base:string){
+    const urls=[...new Set([...css.matchAll(/url\(([^)]+)\)/g)].map(match=>match[1].replace(/^['"]|['"]$/g,'')))];
+    for(const url of urls){if(url.startsWith('data:')||url.startsWith('#'))continue;const full=new URL(url,location.origin+base);if(full.origin===location.origin)css=css.split(url).join(await dataUrl(full.href));}
+    return css;
+  }
+  const appCss=await(await fetch('/app.css')).text();
+  const fonts=(appCss.match(/@font-face\s*\{[^}]+\}/g)??[]).join('\n');
+  const css=await embedCss(await(await fetch('/editor/style.css')).text(),'/editor/style.css')+'\n'+await embedCss(fonts,'/app.css')+'\n:root{--mn-font-ui:'+getComputedStyle(host).fontFamily+'}';
   const html=DOMPurify.sanitize(copy.outerHTML,{ADD_TAGS:['math','annotation']});
-  return `<!doctype html><html lang="${document.documentElement.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><style>${css.replace(/<\/style/gi,'<\\/style')}\nbody{margin:0;background:#fff;color:#222}.mn-note-document.mn-note-surface{box-sizing:border-box;max-width:min(880px,100%);margin:auto;padding:24px}.mn-note-document .milkdown .ProseMirror{min-height:0}.mn-note-document button{display:none}@media print{.mn-note-document.mn-note-surface{max-width:none;padding:0}pre,figure,img{break-inside:avoid}}</style></head><body><article class="mn-note-document mn-note-surface" data-theme="light"><div class="milkdown">${html}</div></article></body></html>`;
+  return `<!doctype html><html lang="${document.documentElement.lang}" data-theme="${theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><style>${css.replace(/<\/style/gi,'<\\/style')}\nbody{margin:0;background:var(--mn-page);color:var(--mn-text);font-family:var(--mn-font-ui);print-color-adjust:exact;-webkit-print-color-adjust:exact}.mn-note-document.mn-note-surface{box-sizing:border-box;max-width:min(880px,100%);margin:auto;padding:24px}.mn-note-document .milkdown .ProseMirror{min-height:0}.mn-note-document button{display:none}@media print{.mn-note-document.mn-note-surface{max-width:none;padding:0}pre,figure,img{break-inside:avoid}}</style></head><body><article class="mn-note-document mn-note-surface" data-theme="${theme}"><div class="milkdown">${html}</div></article></body></html>`;
 }
 export async function printHtml(html:string){
   const frame=document.createElement('iframe');frame.title='PDF 打印';frame.style.cssText='position:fixed;width:1px;height:1px;left:-9999px;border:0';

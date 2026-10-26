@@ -89,6 +89,21 @@ async function suite(){
       const triple=()=>{$('test-host').querySelector('.ProseMirror p')!.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:3}));return $('test-host').querySelector('.mn-block-source');};
       try{run(s);await until(()=>!!streaming(s)?.active);assert(!triple(),'流式期间允许源码编辑');await until(()=>review(s)?.active);assert(!triple(),'diff 期间允许源码编辑');reject(s);assert(triple(),'结束 diff 后源码未解锁');}finally{blockSource.destroy();}
     });
+    await test('白天/黑夜主题：图表、浮层隔离与切换不修改正文',async()=>{
+      const a=document.createElement('div'),b=document.createElement('div');$('test-host').append(a,b);
+      const markdown='```mermaid\ngraph LR\n A[输入] --> B[输出]\n```\n';const changes:string[]=[];
+      const one=await mountEditor(a,{markdown,theme:'light',onChange:m=>changes.push(m)}),two=await mountEditor(b,{markdown,theme:'dark'});
+      try{
+        await Promise.all([one.settled(),two.settled()]);const original=one.getMarkdown();changes.length=0;
+        const fill=(host:HTMLElement)=>getComputedStyle(host.querySelector<SVGElement>('.mn-note-diagram-preview svg .node rect')!).fill;
+        const dayFill=fill(a),nightFill=fill(b);assert(dayFill!==nightFill,'不同主题复用了错误图表缓存');
+        one.setTheme('dark');await one.settled();assert(fill(a)===nightFill,'切换后图表未同步黑夜主题');
+        assert(getComputedStyle(a).backgroundColor==='rgb(38, 38, 36)','正文背景未同步');
+        two.setTheme('light');await two.settled();assert(fill(b)===dayFill&&fill(a)===nightFill,'多实例主题互相污染');
+        const layers=[...document.querySelectorAll<HTMLElement>('.mn-note-menu-layer')];assert(layers.some(el=>el.dataset.theme==='dark')&&layers.some(el=>el.dataset.theme==='light'),'浮层未同步主题');
+        assert(one.getMarkdown()===original&&changes.length===0,'切主题修改了正文');
+      }finally{await one.destroy();await two.destroy();a.remove();b.remove();}
+    });
     await test('异步生命周期无未处理异常',async()=>{await delay(200);assert(unhandled.length===0,unhandled.join('; '));});
   }finally{await current?.destroy();$('test-host').replaceChildren();($('suite') as HTMLButtonElement).disabled=false;$('status').textContent=`回归完成：${passed} 通过，${failed} 失败（本地固定流式数据）`;}
 }

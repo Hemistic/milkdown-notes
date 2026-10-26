@@ -1,8 +1,7 @@
 @font-face{font-family:'PDF AI Crimson Text';src:url('./fonts/CrimsonText-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
 @font-face{font-family:'PDF AI Crimson Text';src:url('./fonts/CrimsonText-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
 @font-face{font-family:'PDF AI Source Han Serif SC';src:url('./fonts/SourceHanSerifSC-SemiBold-CN.woff2') format('woff2');font-weight:100 900;font-display:swap}
-.artifact-chrome{--statusbar-h:30px;--bg:#faf9f5;--bg-elevated:#fffdfa;--border:#1f1e1d26;--border-strong:#1f1e1d4d;--text:#141413;--text-muted:#5c5b57;--accent:#b9573a;--accent-hover:#a64a30;--on-accent:#fffdfa;--danger:#b84946;--floating-shadow:0 7px 18px rgba(31,30,29,.14);--font-ui:'PDF AI Crimson Text','PDF AI Source Han Serif SC','Noto Serif SC','Microsoft YaHei UI',serif;--font-editor:var(--font-ui);font-family:var(--font-ui);line-height:1.5;color:var(--text)}
-body[data-theme=dark] .artifact-chrome{--bg:#262624;--bg-elevated:#2c2c2a;--border:#dedcd126;--border-strong:#dedcd14d;--text:#faf9f5;--text-muted:#c2c0b6;--accent:#c56c4d;--accent-hover:#e6a289;--on-accent:#141413;--danger:#fe8181;--floating-shadow:0 12px 32px rgba(0,0,0,.36)}
+.artifact-chrome{--statusbar-h:30px;--bg:var(--mn-page);--bg-elevated:var(--mn-panel);--border:var(--mn-border);--border-strong:var(--mn-border-strong);--text:var(--mn-text);--text-muted:var(--mn-muted);--accent:var(--mn-accent);--accent-hover:var(--mn-accent-hover);--on-accent:var(--mn-on-accent);--danger:var(--mn-danger);--floating-shadow:var(--mn-shadow);--font-ui:var(--mn-font-ui);--font-editor:var(--font-ui);font-family:var(--font-ui);line-height:1.5;color:var(--text)}
 html:has(#statusbar-root),body:has(#statusbar-root){height:100%;min-height:0;overflow:hidden}
 #document-layout{display:flex;height:calc(100dvh - 30px);min-width:0;min-height:0}
 #editor-pane{flex:1;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;overflow-anchor:none;scrollbar-width:thin}
@@ -17,7 +16,7 @@ html:has(#statusbar-root),body:has(#statusbar-root){height:100%;min-height:0;ove
 #document-layout[data-mode=typewriter] .paper{padding-top:44vh;padding-bottom:calc(44vh + 64px)}
 .focus-dimmer{position:fixed;z-index:30;pointer-events:none;background:color-mix(in srgb,var(--page) 78%,transparent);transition:top 100ms ease,height 100ms ease,opacity 140ms ease}
 #rename-dialog{width:min(360px,calc(100vw - 24px));padding:20px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg-elevated);box-shadow:var(--floating-shadow)}
-#rename-dialog::backdrop{background:#0003}
+#rename-dialog::backdrop{background:var(--mn-backdrop)}
 #rename-dialog form{display:grid;gap:14px}
 #rename-dialog input{width:100%;padding:7px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text);font:inherit}
 #rename-dialog form>div{display:flex;justify-content:flex-end;gap:8px}

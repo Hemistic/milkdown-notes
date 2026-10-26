@@ -36,8 +36,10 @@ async function create(markdown='# 新笔记\n\n',title?:string){await flush();co
 $('new').onclick=()=>{menu.close();void create().catch(report);};
 $('undo').onclick=()=>{menu.close();editor?.undo();};$('redo').onclick=()=>{menu.close();editor?.redo();};
 $('preview').onclick=()=>{menu.close();void(async()=>{if(!editor)return;await flush();const markdown=editor.getMarkdown();readOnly=!readOnly;$('preview').querySelector('.item-label')!.textContent=readOnly?'返回编辑':'阅读模式';setIcon($('preview').querySelector('[data-icon]')!,readOnly?'edit':'read');$<HTMLButtonElement>('undo').disabled=readOnly;$<HTMLButtonElement>('redo').disabled=readOnly;await mount(markdown);status(readOnly?'阅读模式':'已保存到本机');})().catch(report);};
-function toggleTheme(){theme=theme==='light'?'dark':'light';document.body.dataset.theme=theme;editor?.setTheme(theme);$('theme').querySelector('.item-label')!.textContent=theme==='dark'?'浅色外观':'深色外观';setIcon($('theme').querySelector('[data-icon]')!,theme==='dark'?'sun':'moon');savePreferences();renderFooter();}
-$('theme').onclick=toggleTheme;
+function syncTheme(){document.documentElement.dataset.theme=theme;document.body.dataset.theme=theme;editor?.setTheme(theme);$('theme-light').setAttribute('aria-pressed',String(theme==='light'));$('theme-dark').setAttribute('aria-pressed',String(theme==='dark'));}
+function selectTheme(next:'light'|'dark'){theme=next;syncTheme();savePreferences();renderFooter();}
+function toggleTheme(){selectTheme(theme==='light'?'dark':'light');}
+$('theme-light').onclick=()=>selectTheme('light');$('theme-dark').onclick=()=>selectTheme('dark');
 for(const [button,next] of [['locale-zh','zh-CN'],['locale-en','en']] as const){$(button).onclick=()=>void(async()=>{if(!editor)return;await flush();locale=next;await mount(editor.getMarkdown());$('locale-zh').setAttribute('aria-pressed',String(locale==='zh-CN'));$('locale-en').setAttribute('aria-pressed',String(locale==='en'));})().catch(report);}
 $('import').onclick=()=>{menu.close();$<HTMLInputElement>('file').click();};
 $<HTMLInputElement>('file').onchange=()=>void(async()=>{const file=$<HTMLInputElement>('file').files?.[0];if(file)await create(await file.text(),safeName(file.name.replace(/\.markdown$/i,'')));$<HTMLInputElement>('file').value='';})().catch(report);
@@ -71,7 +73,7 @@ async function exportDocument(format:MarkdownExportFormat){
   else{await printHtml(html);status('已请求打印，请选择另存为 PDF');}
 }
 let outlineFrame=0;new MutationObserver(()=>{if(!outlineFrame)outlineFrame=requestAnimationFrame(()=>{outlineFrame=0;if(outlineOpen)updateOutline();});}).observe($('editor'),{subtree:true,childList:true,characterData:true});
-document.body.dataset.theme=theme;$('theme').querySelector('.item-label')!.textContent=theme==='dark'?'浅色外观':'深色外观';setIcon($('theme').querySelector('[data-icon]')!,theme==='dark'?'sun':'moon');modes.set(editorMode);updateOutline();renderFooter();
+syncTheme();modes.set(editorMode);updateOutline();renderFooter();
 window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty)void flush().catch(report);});
 await (async()=>{await refresh();if(!notes.length){await api('/api/notes/guide',{method:'PUT',body:'# 集成指南\n\n此应用使用与集成示例相同的编辑器模块。\n\n返回 [[welcome|欢迎笔记]]。'});await api('/api/notes/welcome',{method:'PUT',body:welcome});await refresh();}await open(notes.find(n=>n.id==='welcome')?.id??notes[0].id);})().catch(report);

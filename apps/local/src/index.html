@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Milkdown Notes · 本地笔记</title>
+  <script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('milkdown.notes.editorPreferences')||'{}')?.theme==='dark'?'dark':'light';}catch{document.documentElement.dataset.theme='light';}</script>
   <link rel="stylesheet" href="/editor/style.css"><link rel="stylesheet" href="/app.css">
   <script type="importmap">{"imports":{"@local/milkdown-notes":"/editor/index.js"}}</script>
 </head>
@@ -31,7 +32,9 @@
       <div class="menu-branch">
         <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="settings-menu"><span data-icon="settings"></span><span>偏好设置</span><span data-icon="chevron" class="chevron"></span></button>
         <section id="settings-menu" class="submenu" aria-label="偏好设置" hidden>
-          <button id="theme" class="menu-item"><span data-icon="moon"></span><span class="item-label">深色外观</span></button>
+          <div class="submenu-heading">主题</div>
+          <button id="theme-light" class="menu-item" aria-pressed="true"><span data-icon="sun"></span><span>白天主题</span><span data-icon="check" class="selected-mark"></span></button>
+          <button id="theme-dark" class="menu-item" aria-pressed="false"><span data-icon="moon"></span><span>黑夜主题</span><span data-icon="check" class="selected-mark"></span></button>
           <div class="menu-divider"></div>
           <div class="submenu-heading">编辑器语言</div>
           <button id="locale-zh" class="menu-item" aria-pressed="true"><span data-icon="language"></span><span>中文</span><span data-icon="check" class="selected-mark"></span></button>

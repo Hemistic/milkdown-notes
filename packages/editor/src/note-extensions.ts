@@ -13,10 +13,20 @@ import {insertedNoteNodePosition} from './note-slash-commands.js';
 import type {NoteEditingOptions} from './note-references.js';
 
 const pending=new WeakMap<HTMLElement,Set<Promise<void>>>();
-export async function settleNoteDiagrams(host:HTMLElement){await Promise.all([...(pending.get(host)??[])]);}
+export async function settleNoteDiagrams(host:HTMLElement){await Promise.resolve();await Promise.all([...(pending.get(host)??[])]);}
 let mermaidLoader:Promise<typeof import('mermaid')['default']>|undefined,diagramSequence=0;
 const diagramCache=new Map<string,string>();
-function loadMermaid(){return mermaidLoader??=import('mermaid').then(({default:mermaid})=>{mermaid.initialize({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,maxTextSize:20000,maxEdges:250,theme:'neutral',htmlLabels:false,flowchart:{htmlLabels:false},sequence:{useMaxWidth:true}});return mermaid;});}
+function loadMermaid(){return mermaidLoader??=import('mermaid').then(({default:mermaid})=>mermaid);}
+let diagramRenderQueue:Promise<unknown>=Promise.resolve();
+function themedDiagram(host:HTMLElement,text:string){
+ const style=getComputedStyle(host),color=(name:string)=>style.getPropertyValue('--mn-'+name).trim();
+ const themeVariables={darkMode:style.colorScheme==='dark',background:color('code-bg'),primaryColor:color('accent-soft'),primaryTextColor:color('text'),primaryBorderColor:color('accent'),lineColor:color('muted'),secondaryColor:color('raised'),tertiaryColor:color('panel'),textColor:color('text'),mainBkg:color('accent-soft'),nodeBorder:color('accent'),clusterBkg:color('raised'),clusterBorder:color('border-strong'),edgeLabelBackground:color('code-bg'),titleColor:color('text'),fontFamily:style.getPropertyValue('--crepe-font-default').trim()};
+ const key=JSON.stringify(themeVariables)+'\n'+text;
+ // Mermaid configuration is global: serialize initialization with rendering so
+ // two editor instances using different themes cannot recolor one another.
+ const task=diagramRenderQueue.then(async()=>{const cached=diagramCache.get(key);if(cached)return cached;const mermaid=await loadMermaid();mermaid.initialize({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,maxTextSize:20000,maxEdges:250,theme:'base',themeVariables,htmlLabels:false,flowchart:{htmlLabels:false},sequence:{useMaxWidth:true}});const svg=(await mermaid.render('note-render-'+(++diagramSequence),text)).svg;diagramCache.set(key,svg);if(diagramCache.size>24)diagramCache.delete(diagramCache.keys().next().value!);return svg;});
+ diagramRenderQueue=task.catch(()=>{});return task;
+}
 function rekeySvg(svg:string){const prefix='note-diagram-'+(++diagramSequence)+'-',ids=new Set([...svg.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]));return svg.replace(/\bid="([^"]+)"|#([\w:.-]+)/g,(match,id,reference)=>id?'id="'+prefix+id+'"':ids.has(reference)?'#'+prefix+reference:match);}
 export function uniqueNoteDiagrams(host:HTMLElement){for(const diagram of host.querySelectorAll<HTMLElement>('.mn-note-diagram-preview'))if(diagram.querySelector('svg'))diagram.innerHTML=rekeySvg(diagram.innerHTML);}
 function mark(name:string,md:string,tag:string,pattern:RegExp){
@@ -53,7 +63,7 @@ function diagramView(host:HTMLElement){return $view(diagram,()=> (node,editor,ge
  let current=node,version=0,timer:ReturnType<typeof setTimeout>|undefined,disposed=false,initial=true,cancelPending:()=>void=()=>{};
  const render=()=>{const text=current.textContent,ticket=++version;clearTimeout(timer);cancelPending();
   const run=async()=>{try{if(!text.trim()){preview.textContent=translateFor(host,"输入 Mermaid 图表代码");return;}if(text.length>20000)throw Error(translateFor(host,"图表代码过长，请拆分"));
-    let svg=diagramCache.get(text);if(!svg){const mermaid=await loadMermaid();if(disposed||ticket!==version)return;svg=(await mermaid.render('note-render-'+(++diagramSequence),text)).svg;diagramCache.set(text,svg);if(diagramCache.size>24)diagramCache.delete(diagramCache.keys().next().value!);}
+    const svg=await themedDiagram(host,text);
     if(!disposed&&ticket===version){preview.innerHTML=rekeySvg(svg);preview.removeAttribute('data-error');}
    }catch{if(!disposed&&ticket===version){preview.dataset.error='true';preview.textContent=translateFor(host,"图表语法有误，请编辑下方代码。");dom.dataset.editing='true';}}
   };
@@ -62,7 +72,8 @@ function diagramView(host:HTMLElement){return $view(diagram,()=> (node,editor,ge
   if(initial){initial=false;start();}else timer=setTimeout(start,220);
  };
  edit.onmousedown=e=>e.preventDefault();edit.onclick=e=>{e.preventDefault();e.stopPropagation();if(!editor.editable)return;dom.dataset.editing='true';const pos=getPos();if(typeof pos==='number'){editor.dispatch(editor.state.tr.setSelection(TextSelection.create(editor.state.doc,pos+1)));editor.focus();}};
- render();return{dom,contentDOM:code,stopEvent:event=>preview.contains(event.target as Node)||edit.contains(event.target as Node),ignoreMutation:mutation=>mutation.type!=='selection'&&!code.contains(mutation.target),update(next){if(next.type!==current.type)return false;if(next.textContent!==current.textContent){current=next;render();}return true;},destroy(){disposed=true;version++;clearTimeout(timer);cancelPending();}};
+ const themeObserver=new MutationObserver(render);for(const target of new Set([host,document.body,document.documentElement]))themeObserver.observe(target,{attributes:true,attributeFilter:['data-theme']});
+ render();return{dom,contentDOM:code,stopEvent:event=>preview.contains(event.target as Node)||edit.contains(event.target as Node),ignoreMutation:mutation=>mutation.type!=='selection'&&!code.contains(mutation.target),update(next){if(next.type!==current.type)return false;if(next.textContent!==current.textContent){current=next;render();}return true;},destroy(){disposed=true;version++;clearTimeout(timer);cancelPending();themeObserver.disconnect();}};
 });}
 export function insertNoteExtension(ctx:Ctx,kind:'toc'|'mermaid',slash=true){const view=ctx.get(editorViewCtx),tr=view.state.tr,range=slash?noteSlashRange(view):undefined;if(range)tr.delete(range.from,range.to);const type=view.state.schema.nodes[kind==='toc'?'note_toc':'note_mermaid'],node=type.create(null,kind==='mermaid'?view.state.schema.text('graph LR\n  A[输入] --> B[处理]\n  B --> C[输出]'):undefined);tr.replaceSelectionWith(node);const position=insertedNoteNodePosition(tr,type);if(position===undefined)throw Error("Note block insertion anchor missing");if(tr.doc.nodeAt(position+node.nodeSize)?.type!==view.state.schema.nodes.paragraph)tr.insert(position+node.nodeSize,view.state.schema.nodes.paragraph.create());tr.setSelection(TextSelection.create(tr.doc,kind==='mermaid'?position+1:position+node.nodeSize+1));view.dispatch(tr.scrollIntoView());view.focus();}
 export function noteExtensionPlugins(host:HTMLElement){return[
