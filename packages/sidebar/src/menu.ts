@@ -16,6 +16,8 @@ import {
   Check,
   ChevronRight,
   CheckCheck,
+  X,
+  Sparkles,
   type IconNode,
 } from 'lucide';
 
@@ -37,6 +39,8 @@ const icons = {
   check: Check,
   chevron: ChevronRight,
   saved: CheckCheck,
+  close: X,
+  ai: Sparkles,
 } satisfies Record<string, IconNode>;
 export function setIcon(element: Element, name: keyof typeof icons) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

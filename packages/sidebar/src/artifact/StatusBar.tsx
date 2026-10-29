@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import type { NotesEditorMode, NotesTheme, MarkdownExportFormat } from './types';
+import { setIcon } from '../menu.js';
 
 export interface StatusBarProps {
   words: number;
@@ -21,6 +22,7 @@ export interface StatusBarProps {
   onImportDocument: () => void;
   onRenameDocument: () => void;
   onExportDocument: (format: MarkdownExportFormat) => void;
+  onOpenSettings: () => void;
 }
 
 export const StatusBar: FC<StatusBarProps> = ({
@@ -43,6 +45,7 @@ export const StatusBar: FC<StatusBarProps> = ({
   onImportDocument,
   onRenameDocument,
   onExportDocument,
+  onOpenSettings,
 }) => {
   const [statsView, setStatsView] = useState<'words' | 'chars' | 'lines'>('words');
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
@@ -345,6 +348,20 @@ export const StatusBar: FC<StatusBarProps> = ({
           {compactStats[statsView]}
         </button>
       </div>
+      <button
+        type="button"
+        className="status-icon-button status-settings"
+        aria-label={locale === 'zh' ? '设置' : 'Settings'}
+        title={locale === 'zh' ? '设置' : 'Settings'}
+        aria-haspopup="dialog"
+        onClick={onOpenSettings}
+      >
+        <span
+          ref={(element) => {
+            if (element) setIcon(element, 'settings');
+          }}
+        />
+      </button>
     </footer>
   );
 };

@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile, rename, readdir, unlink } from 'node:fs/pro
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-async function atomicWrite(file, content) {
+export async function atomicWrite(file, content) {
   const temporary = file + '.' + randomUUID() + '.tmp';
   try {
     await writeFile(temporary, content, 'utf8');

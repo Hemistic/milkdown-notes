@@ -81,12 +81,33 @@ let store = memoryFiles();
 const exports: NoteExport[] = [];
 const aiErrors: Error[] = [];
 const unhandled: string[] = [];
+let settingsValue = {
+  provider: 'openai',
+  model: 'gpt-6-luna',
+  reasoningEffort: 'medium',
+  keyConfigured: true,
+};
+let settingsFail = false;
 window.addEventListener('unhandledrejection', (event) => unhandled.push(String(event.reason)));
 async function mountDemo() {
   first = await mountSidebar($('left'), {
     files: store.files,
     initialNoteId: 'one',
     aiProvider: ai,
+    aiSettings: {
+      async load() {
+        return settingsValue;
+      },
+      async save(value) {
+        if (settingsFail) throw Error('设置保存失败测试');
+        settingsValue = {
+          ...settingsValue,
+          model: value.model,
+          reasoningEffort: value.reasoningEffort,
+        };
+        return settingsValue;
+      },
+    },
     onAIError: (error) => aiErrors.push(error),
     onExport: (file) => {
       exports.push(file);
@@ -360,6 +381,91 @@ async function suite() {
           host.querySelector('[data-id="notes"]')?.textContent?.includes('菜单重命名'),
         '名称未刷新到历史列表',
       );
+    });
+    await test('240px 设置入口可见，主题/模式/语言/拼写立即生效', async () => {
+      const host = $('left');
+      $('primary').style.width = '240px';
+      await until(() => host.dataset.narrow === 'true');
+      const trigger = host.querySelector<HTMLButtonElement>('.status-settings')!;
+      const bounds = trigger.getBoundingClientRect();
+      assert(
+        bounds.left >= host.getBoundingClientRect().left &&
+          bounds.right <= host.getBoundingClientRect().right,
+        '设置按钮被挤出底栏',
+      );
+      trigger.click();
+      const dialog = host.querySelector<HTMLDialogElement>('.settings-dialog')!;
+      assert(dialog.open && dialog.getBoundingClientRect().width <= 240, '窄侧栏设置面板越界');
+      $('primary').style.width = '390px';
+      await until(() => dialog.getBoundingClientRect().width > 240);
+      $('primary').style.width = '240px';
+      await until(() => dialog.getBoundingClientRect().width <= 240);
+      const select = async (name: string, value: string) => {
+        const input = dialog.querySelector<HTMLSelectElement>('[name="' + name + '"]')!;
+        input.value = value;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        await delay(80);
+      };
+      await select('theme', 'dark');
+      assert(host.dataset.theme === 'dark', '主题设置未生效');
+      await select('mode', 'typewriter');
+      assert(
+        host.querySelector<HTMLElement>('[data-id="document-layout"]')!.dataset.mode ===
+          'typewriter',
+        '模式未生效',
+      );
+      const spellcheck = dialog.querySelector<HTMLInputElement>('[name="spellcheck"]')!;
+      spellcheck.checked = false;
+      spellcheck.dispatchEvent(new Event('change', { bubbles: true }));
+      await until(() => !host.querySelector<HTMLElement>('.ProseMirror')!.spellcheck);
+      await select('locale', 'en');
+      await until(
+        () => host.querySelector('.ProseMirror')?.getAttribute('aria-label') === 'Note content',
+      );
+      await select('locale', 'zh-CN');
+      await select('theme', 'light');
+      await select('mode', 'normal');
+      aiMode = 'slow';
+      const activeEditor = first.editor;
+      activeEditor.ai!.run('切换设置测试', 'document');
+      await until(() => activeEditor.ai!.getState().status === 'streaming');
+      await select('locale', 'en');
+      assert(
+        first.editor === activeEditor &&
+          dialog.querySelector('.settings-message')?.textContent?.includes('请先结束 AI'),
+        '语言切换丢弃了 AI 会话',
+      );
+      activeEditor.ai!.abort();
+      aiMode = 'normal';
+      dialog.querySelector<HTMLButtonElement>('.settings-close')!.click();
+      assert(!dialog.open, '关闭设置失败');
+      $('primary').style.width = '390px';
+    });
+    await test('AI 设置读取、保存、失败后重试，密钥不回显', async () => {
+      const host = $('left');
+      host.querySelector<HTMLButtonElement>('.status-settings')!.click();
+      const dialog = host.querySelector<HTMLDialogElement>('.settings-dialog')!;
+      const form = dialog.querySelector<HTMLFormElement>('.settings-ai-form')!;
+      await until(() => !form.hidden);
+      const key = form.querySelector<HTMLInputElement>('[name="apiKey"]')!;
+      assert(key.type === 'password' && key.value === '', '已有密钥被回显');
+      const effort = form.querySelector<HTMLSelectElement>('[name="reasoningEffort"]')!;
+      effort.value = 'high';
+      settingsFail = true;
+      form.requestSubmit();
+      await until(
+        () =>
+          !!dialog.querySelector('.settings-message')?.textContent?.includes('设置保存失败测试'),
+      );
+      assert(settingsValue.reasoningEffort === 'medium', '失败仍修改了配置');
+      settingsFail = false;
+      form.requestSubmit();
+      await until(() => settingsValue.reasoningEffort === 'high');
+      dialog.close();
+      host.querySelector<HTMLButtonElement>('.status-settings')!.click();
+      await until(() => !form.hidden);
+      assert(effort.value === 'high' && key.value === '', '重新打开丢失设置');
+      dialog.close();
     });
     await test('卸载取消 AI，清理浮层/事件，容器可以再次挂载', async () => {
       aiMode = 'slow';

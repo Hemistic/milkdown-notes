@@ -23,6 +23,8 @@ export const template = (prefix: string) => `
       <div class="menu-branch">
         <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="${prefix}-settings-menu"><span data-icon="settings"></span><span>偏好设置</span><span data-icon="chevron" class="chevron"></span></button>
         <section data-id="settings-menu" id="${prefix}-settings-menu" class="submenu" aria-label="偏好设置" hidden>
+          <button data-id="all-settings" class="menu-item"><span data-icon="settings"></span><span>所有设置…</span></button>
+          <div class="menu-divider"></div>
           <div class="submenu-heading">主题</div>
           <button data-id="theme-light" id="${prefix}-theme-light" class="menu-item" aria-pressed="true"><span data-icon="sun"></span><span>白天主题</span><span data-icon="check" class="selected-mark"></span></button>
           <button data-id="theme-dark" id="${prefix}-theme-dark" class="menu-item" aria-pressed="false"><span data-icon="moon"></span><span>黑夜主题</span><span data-icon="check" class="selected-mark"></span></button>

@@ -17,7 +17,12 @@ before(async () => {
   origin = `http://127.0.0.1:${port}`;
   child = spawn(process.execPath, ['apps/local/server.mjs'], {
     cwd: fileURLToPath(new URL('../', import.meta.url)),
-    env: { ...process.env, PORT: String(port), NOTES_DATA_DIR: directory },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      NOTES_DATA_DIR: directory,
+      NOTES_ENV_FILE: path.join(directory, '.env.local'),
+    },
     windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -46,6 +51,34 @@ after(async () => {
 
 const request = (route, init = {}) =>
   fetch(origin + route, { ...init, headers: { Origin: origin, ...init.headers } });
+
+test('AI settings save takes effect without restart and never returns the API key', async () => {
+  const response = await request('/api/ai/settings', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'settings-test',
+      reasoningEffort: 'medium',
+      apiKey: 'fixture-secret',
+    }),
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    provider: 'openai',
+    model: 'settings-test',
+    reasoningEffort: 'medium',
+    keyConfigured: true,
+  });
+  const active = await (await request('/api/ai')).json();
+  assert.equal(active.model, 'settings-test');
+  const unchanged = await request('/api/ai/settings', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'settings-test', reasoningEffort: 'high', apiKey: '' }),
+  });
+  assert.equal((await unchanged.json()).keyConfigured, true);
+  assert.equal((await request('/api/ai/settings')).status, 200);
+});
 
 test('HTTP note creation, overwrite, rename and reads preserve the stable ID', async () => {
   const markdown = '# 网络测试\n\n[[other]]\n\n| A | B |\n| - | - |\n| 中 | 文 |\n';

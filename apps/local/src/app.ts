@@ -24,12 +24,29 @@ try {
     await files.write('welcome', welcome);
   }
   const notes = await files.list();
-  const ai = await (await fetch('/api/ai')).json();
   const sidebar = await mountSidebar(document.getElementById('sidebar')!, {
     files,
     initialNoteId: notes.find((note) => note.id === 'welcome')?.id ?? notes[0].id,
     preferences,
-    aiProvider: ai.configured ? createHttpAIProvider() : undefined,
+    aiProvider: createHttpAIProvider(),
+    aiSettings: {
+      async load() {
+        const response = await fetch('/api/ai/settings');
+        const value = await response.json();
+        if (!response.ok) throw Error(value.error);
+        return value;
+      },
+      async save(settings) {
+        const response = await fetch('/api/ai/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings),
+        });
+        const value = await response.json();
+        if (!response.ok) throw Error(value.error);
+        return value;
+      },
+    },
     onPreferencesChange(value) {
       localStorage.setItem(preferenceKey, JSON.stringify(value));
     },

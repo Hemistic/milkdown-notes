@@ -161,3 +161,20 @@ HTML/PDF 默认读取包旁的 `style.css`，嵌入同源字体、图片和当�
 | `POST /api/images`     | 原始图片字节，Content-Type 为 PNG/JPEG/WebP/GIF | `{url}`              |
 
 服务错误返回非 2xx 和 `{error}`。内置服务只监听本机并检查修改请求 Origin，不是跨站开放 API；外部软件优先实现 `NoteFiles` 或自己的代理。不要通过移除本地服务边界来接入。
+
+## 底栏设置
+
+底栏右侧的 Lucide 设置按钮固定可见，不随窄栏操作区横向滚动。面板支持主题、编辑模式、编辑器语言、大纲、拼写和三击源码；偏好通过 `onPreferencesChange` 保存，`preferences.locale` 会在重新挂载时恢复。语言切换需要重建编辑器，AI 生成或 diff 审查期间会提示先完成当前操作。
+
+可选 `aiSettings` 接口让宿主提供 AI 配置：
+
+```ts
+aiSettings: {
+  load: () => host.ai.readSettings(),
+  save: ({ model, reasoningEffort, apiKey }) => host.ai.saveSettings({ model, reasoningEffort, apiKey }),
+}
+```
+
+返回 `SidebarAISettings`：`provider`、`model`、`reasoningEffort`、`keyConfigured`。没有接入此接口时，面板提示 AI 由宿主管理。密钥输入留空表示保留原值，返回值不包含密钥。
+
+本地应用的 `GET/PATCH /api/ai/settings` 使用同一契约，保存到被 Git 忽略的 `.env.local`，下次请求立即使用新设置，不需要重启；已经发起的请求继续使用原配置。测试服务可以用 `NOTES_ENV_FILE` 指定独立配置文件，避免触碰真实密钥。

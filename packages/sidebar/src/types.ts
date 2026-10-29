@@ -8,6 +8,21 @@ export interface SidebarPreferences {
   outline: boolean;
   spellcheck: boolean;
   source: boolean;
+  locale: 'zh-CN' | 'en';
+}
+export interface SidebarAISettings {
+  provider: string;
+  model: string;
+  reasoningEffort: string;
+  keyConfigured: boolean;
+}
+export interface SidebarAISettingsAdapter {
+  load(): Promise<SidebarAISettings>;
+  save(value: {
+    model: string;
+    reasoningEffort: string;
+    apiKey: string;
+  }): Promise<SidebarAISettings>;
 }
 export interface NoteExport {
   format: MarkdownExportFormat;
@@ -20,6 +35,7 @@ export interface SidebarOptions {
   files: NoteFiles;
   initialNoteId?: string;
   aiProvider?: AIProvider;
+  aiSettings?: SidebarAISettingsAdapter;
   preferences?: Partial<SidebarPreferences>;
   onPreferencesChange?: (preferences: SidebarPreferences) => void;
   onChange?: (document: NoteDocument) => void;

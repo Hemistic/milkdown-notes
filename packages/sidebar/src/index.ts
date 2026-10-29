@@ -13,6 +13,8 @@ export { createHttpFiles } from './files.js';
 export { createHttpAIProvider } from './ai.js';
 export type { NoteFiles, NoteDocument, NoteSummary } from './files.js';
 import { setupMenu, setIcon } from './menu.js';
+import { createSettings } from './settings.js';
+export type { SidebarAISettings, SidebarAISettingsAdapter } from './types.js';
 export async function mountSidebar(
   root: HTMLElement,
   options: SidebarOptions,
@@ -44,7 +46,7 @@ export async function mountSidebar(
     notes: { id: string; title: string }[] = [],
     readOnly = false,
     theme: 'light' | 'dark' = preference.theme === 'dark' ? 'dark' : 'light',
-    locale: 'zh-CN' | 'en' = 'zh-CN';
+    locale: 'zh-CN' | 'en' = preference.locale ?? 'zh-CN';
   let saveTask: Promise<void> | undefined,
     timer: ReturnType<typeof setTimeout> | undefined,
     dirty = false,
@@ -64,6 +66,43 @@ export async function mountSidebar(
   const perform = (action: () => Promise<unknown>) => {
     void serial(action).catch(report);
   };
+  const getPreferences = (): SidebarPreferences => ({
+    theme,
+    mode: editorMode,
+    outline: outlineOpen,
+    spellcheck,
+    source: sourceReveal,
+    locale,
+  });
+  const settings = createSettings(root, {
+    preferences: getPreferences,
+    change: (value) => serial(() => applyPreferences(value)),
+    ai: options.aiSettings,
+  });
+  function openSettings() {
+    menu.close();
+    void settings.open();
+  }
+  async function applyPreferences(value: SidebarPreferences) {
+    const languageChanged = locale !== value.locale;
+    if (languageChanged && editor?.ai && editor.ai.getState().status !== 'idle')
+      throw Error('请先结束 AI 改写或处理差异，再切换语言');
+    if (languageChanged) await flush();
+    theme = value.theme;
+    editorMode = value.mode;
+    outlineOpen = editorMode === 'focus' ? false : value.outline;
+    spellcheck = value.spellcheck;
+    sourceReveal = value.source;
+    locale = value.locale;
+    if (languageChanged && editor) await mount(editor.getMarkdown());
+    syncTheme();
+    editor?.setSpellcheck(spellcheck);
+    editor?.setSourceReveal(sourceReveal);
+    modes.set(editorMode);
+    updateOutline();
+    savePreferences();
+    renderFooter();
+  }
   async function saveChanges() {
     status('正在保存…');
     while (dirty) {
@@ -196,6 +235,8 @@ export async function mountSidebar(
     editor?.setTheme(theme);
     $('theme-light').setAttribute('aria-pressed', String(theme === 'light'));
     $('theme-dark').setAttribute('aria-pressed', String(theme === 'dark'));
+    $('locale-zh').setAttribute('aria-pressed', String(locale === 'zh-CN'));
+    $('locale-en').setAttribute('aria-pressed', String(locale === 'en'));
   }
   function selectTheme(next: 'light' | 'dark') {
     theme = next;
@@ -208,19 +249,13 @@ export async function mountSidebar(
   }
   $('theme-light').onclick = () => selectTheme('light');
   $('theme-dark').onclick = () => selectTheme('dark');
+  $('all-settings').onclick = openSettings;
   for (const [button, next] of [
     ['locale-zh', 'zh-CN'],
     ['locale-en', 'en'],
   ] as const) {
     $(button).onclick = () =>
-      perform(async () => {
-        if (!editor) return;
-        await flush();
-        locale = next;
-        await mount(editor.getMarkdown());
-        $('locale-zh').setAttribute('aria-pressed', String(locale === 'zh-CN'));
-        $('locale-en').setAttribute('aria-pressed', String(locale === 'en'));
-      });
+      perform(() => applyPreferences({ ...getPreferences(), locale: next }));
   }
   $('import').onclick = () => {
     menu.close();
@@ -237,13 +272,7 @@ export async function mountSidebar(
     perform(() => exportDocument('markdown'));
   };
   function savePreferences() {
-    options.onPreferencesChange?.({
-      theme,
-      mode: editorMode,
-      outline: outlineOpen,
-      spellcheck,
-      source: sourceReveal,
-    });
+    options.onPreferencesChange?.(getPreferences());
   }
   function updateOutline() {
     $('outline').hidden = !outlineOpen;
@@ -315,6 +344,7 @@ export async function mountSidebar(
       onImportDocument: () => $<HTMLInputElement>('file').click(),
       onRenameDocument: renameDocument,
       onExportDocument: (format) => perform(() => exportDocument(format)),
+      onOpenSettings: openSettings,
     });
   }
   function renameDocument() {
@@ -386,6 +416,7 @@ export async function mountSidebar(
   renderFooter();
 
   function updateBounds() {
+    settings.updateBounds();
     const box = root.getBoundingClientRect();
     root.dataset.compact = String(box.width <= 650);
     root.dataset.narrow = String(box.width <= 330);
@@ -414,6 +445,7 @@ export async function mountSidebar(
     resize.disconnect();
     cancelAnimationFrame(outlineFrame);
     menu.destroy();
+    settings.destroy();
     modes.destroy();
     footer.destroy();
     await editor?.destroy();

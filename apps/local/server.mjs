@@ -5,11 +5,13 @@ import { loadEnvFile } from 'node:process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStorage } from './storage.mjs';
-import { configuredAI, streamAI } from './ai.mjs';
+import { streamAI } from './ai.mjs';
+import { createAISettings } from './ai-settings.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const envFile = path.join(root, '.env.local');
+const envFile = process.env.NOTES_ENV_FILE ?? path.join(root, '.env.local');
 if (existsSync(envFile)) loadEnvFile(envFile);
-const ai = configuredAI();
+const aiSettings = createAISettings(envFile);
+let ai = aiSettings.provider();
 const port = Number(process.env.PORT ?? 43150);
 const storage = createStorage(process.env.NOTES_DATA_DIR ?? path.join(root, '.data'));
 await storage.init();
@@ -60,6 +62,13 @@ http
       )
         return reply(403, { error: 'Same-origin requests only' });
       if (route === '/api/notes' && req.method === 'GET') return reply(200, await storage.list());
+      if (route === '/api/ai/settings' && req.method === 'GET')
+        return reply(200, aiSettings.read());
+      if (route === '/api/ai/settings' && req.method === 'PATCH') {
+        const value = await aiSettings.save(JSON.parse((await body(req)).toString('utf8')));
+        ai = aiSettings.provider();
+        return reply(200, value);
+      }
       if (route === '/api/ai' && req.method === 'GET')
         return reply(200, {
           configured: !!ai,
@@ -68,7 +77,7 @@ http
           reasoningEffort: ai?.reasoningEffort,
         });
       if (route === '/api/ai' && req.method === 'POST') {
-        if (!ai) return reply(503, { error: 'Configure AI_MODEL in .env.local first' });
+        if (!ai) return reply(503, { error: '请先在底栏设置中配置 AI 模型' });
         const context = JSON.parse((await body(req)).toString('utf8'));
         if (
           !['document', 'selection', 'instruction'].every((key) => typeof context[key] === 'string')
