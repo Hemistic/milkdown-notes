@@ -24,9 +24,7 @@ export function noteSelectionToolbar(
 ) {
   const t = translator(options);
   return $prose((ctx) => {
-    let provider: TooltipProvider | undefined,
-      view: EditorView | undefined,
-      disposed = false;
+    let provider: TooltipProvider | undefined, view: EditorView | undefined;
     const bar = document.createElement('div');
     bar.className = 'milkdown-toolbar';
     bar.setAttribute('role', 'toolbar');
@@ -114,7 +112,7 @@ export function noteSelectionToolbar(
       return button;
     });
     const refresh = () => {
-      if (!view || disposed) return;
+      if (!view) return;
       const { from, to, $from } = view.state.selection;
       actions.forEach((action, index) => {
         const mark = action.mark ? view!.state.schema.marks[action.mark] : undefined,
@@ -163,7 +161,6 @@ export function noteSelectionToolbar(
             refresh();
           },
           destroy() {
-            disposed = true;
             provider?.destroy();
             bar.remove();
             view = undefined;

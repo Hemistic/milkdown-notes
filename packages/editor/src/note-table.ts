@@ -17,8 +17,7 @@ import { noteUiIcon } from './note-ui-icons.js';
 export const noteTableKeyboard = (options: LocaleOptions = {}) =>
   $prose(() => {
     const t = translator(options);
-    let current: EditorView | undefined,
-      disposed = false;
+    let current: EditorView | undefined;
     const bar = document.createElement('div');
     bar.className = 'mn-note-table-toolbar';
     bar.contentEditable = 'false';
@@ -62,7 +61,7 @@ export const noteTableKeyboard = (options: LocaleOptions = {}) =>
       event.stopPropagation();
     };
     const refresh = () => {
-      if (disposed || !current) return;
+      if (!current) return;
       if (
         !current.editable ||
         !isInTable(current.state) ||
@@ -96,7 +95,6 @@ export const noteTableKeyboard = (options: LocaleOptions = {}) =>
             refresh();
           },
           destroy() {
-            disposed = true;
             bar.remove();
             current = undefined;
           },

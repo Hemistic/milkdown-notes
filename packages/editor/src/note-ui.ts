@@ -59,7 +59,6 @@ export function editableNoteEditor(
 ): Editor {
   const t = translator(options);
   const builder = new CrepeBuilder({ root: host, defaultValue: markdown });
-  const handleRoot = host;
   const slash = options.readOnly ? undefined : noteSlashSupport(host);
   if (slash) builder.editor.use(slash.plugin);
   builder
@@ -162,7 +161,7 @@ export function editableNoteEditor(
     builder.addFeature(blockEdit, {
       slashMenu: slash!.slashMenu,
       blockHandle: {
-        root: handleRoot,
+        root: host,
         getPlacement: () => 'right-start',
         floatingUIOptions: { middleware: [] },
         getPosition: ({ active, blockDom }) => {
@@ -172,7 +171,7 @@ export function editableNoteEditor(
             for (const type of ['pointerdown', 'click', 'dragstart', 'dragover', 'drop'])
               blockDom.addEventListener(type, (event) => event.stopPropagation());
           }
-          const bounds = handleRoot.getBoundingClientRect(),
+          const bounds = host.getBoundingClientRect(),
             block = active.el.getBoundingClientRect(),
             height = blockDom.getBoundingClientRect().height;
           const top = Math.max(bounds.top, Math.min(block.top, bounds.bottom - height));
@@ -272,19 +271,35 @@ export function bindNoteUi(host: HTMLElement, options: NoteEditingOptions, headi
     }
     status.textContent = message;
   };
-  const open = (event: MouseEvent) => {
+  const open = async (event: MouseEvent) => {
     const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
-    if (!anchor) return;
-    const href = anchor.getAttribute('href');
-    if (!href || anchor.hasAttribute('data-note-wiki') || anchor.hasAttribute('data-note-heading'))
+    if (
+      !anchor ||
+      anchor.hasAttribute('data-note-wiki') ||
+      anchor.hasAttribute('data-note-heading')
+    )
       return;
-    if (!href.startsWith('#note-ref/')) {
-      if (
-        href.startsWith('#') &&
-        (host.dataset.readonly === 'true' || event.ctrlKey || event.metaKey)
-      ) {
+    const href = anchor.getAttribute('href')!;
+    const isReference = href.startsWith('#note-ref/');
+    if (isReference) event.preventDefault();
+    const canOpen =
+      host.dataset.readonly === 'true' ||
+      event.ctrlKey ||
+      event.metaKey ||
+      (isReference && anchor.closest('.link-preview'));
+    if (!canOpen) return;
+    try {
+      if (isReference) {
+        event.stopImmediatePropagation();
+        const reference = options.references?.().find((ref) => noteReferenceHref(ref) === href);
+        if (!reference) throw Error(t('引用已移除或不属于当前工作区'));
+        await options.onReference?.(reference);
+        return;
+      }
+      if (href.startsWith('#')) {
+        const fragment = decodeURIComponent(href.slice(1));
         const target = [...host.querySelectorAll<HTMLElement>('.ProseMirror [id]')].find(
-          (el) => el.id === headingPrefix + decodeURIComponent(href.slice(1)),
+          (el) => el.id === headingPrefix + fragment,
         );
         if (target) {
           event.preventDefault();
@@ -292,44 +307,25 @@ export function bindNoteUi(host: HTMLElement, options: NoteEditingOptions, headi
           return;
         }
       }
-      if (options.onLink && (host.dataset.readonly === 'true' || event.ctrlKey || event.metaKey)) {
+      if (options.onLink) {
         event.preventDefault();
-        void Promise.resolve()
-          .then(() => options.onLink!(href))
-          .catch((reason) => error(String(reason)));
+        await options.onLink(href);
       }
-      return;
+    } catch (reason) {
+      error(t('打开引用失败：') + String(reason));
     }
-    event.preventDefault();
-    if (!(
-      host.dataset.readonly === 'true' ||
-      event.ctrlKey ||
-      event.metaKey ||
-      anchor.closest('.link-preview')
-    ))
-      return;
-    event.stopImmediatePropagation();
-    const reference = options.references?.().find((ref) => noteReferenceHref(ref) === href);
-    if (!reference) {
-      error(t('引用已移除或不属于当前工作区'));
-      return;
-    }
-    void Promise.resolve()
-      .then(() => options.onReference?.(reference))
-      .catch((reason) => error(t('打开引用失败：') + String(reason)));
   };
   host.addEventListener('pointerdown', pointer);
   host.addEventListener('click', open, true);
-  const handleRoot = host;
   const hideHandle = () => {
-    for (const el of handleRoot.querySelectorAll<HTMLElement>(':scope>.milkdown-block-handle'))
+    for (const el of host.querySelectorAll<HTMLElement>(':scope>.milkdown-block-handle'))
       el.dataset.show = 'false';
   };
-  handleRoot.addEventListener('scroll', hideHandle, true);
+  host.addEventListener('scroll', hideHandle, true);
   const drag = (event: Event) => event.stopPropagation();
   for (const type of ['dragstart', 'dragover', 'drop']) host.addEventListener(type, drag);
   return () => {
-    handleRoot.removeEventListener('scroll', hideHandle, true);
+    host.removeEventListener('scroll', hideHandle, true);
     host.removeEventListener('pointerdown', pointer);
     host.removeEventListener('click', open, true);
     for (const type of ['dragstart', 'dragover', 'drop']) host.removeEventListener(type, drag);

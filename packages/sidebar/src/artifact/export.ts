@@ -103,11 +103,12 @@ export async function printHtml(html: string) {
   frame.srcdoc = html;
   document.body.append(frame);
   await loaded;
-  await frame.contentDocument?.fonts.ready;
+  const printWindow = frame.contentWindow!;
+  await printWindow.document.fonts.ready;
   const cleanup = () => frame.remove();
-  frame.contentWindow?.addEventListener('afterprint', cleanup, { once: true });
-  frame.contentWindow?.focus();
-  frame.contentWindow?.print();
+  printWindow.addEventListener('afterprint', cleanup, { once: true });
+  printWindow.focus();
+  printWindow.print();
   // Some embedded browsers do not dispatch afterprint on cancellation.
   setTimeout(cleanup, 60000);
 }

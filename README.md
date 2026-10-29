@@ -21,8 +21,8 @@ npm start
 - `npm run format:check`：检查源码格式。
 - `npm run dev`：构建后启动；当前不含热更新，修改后重新构建并刷新。
 - `npm run typecheck`：TypeScript 检查。
-- `npm test`：12 个聚焦测试，覆盖存储、路径边界、适配失败和 AI provider 流式协议。
-- AI / diff 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；完整结果见 [侧栏与 AI 验收记录](docs/ai-responsive-verification.md)。
+- `npm test`：16 个测试，覆盖存储、真实 HTTP 文件/图片服务、路径边界、适配失败和 AI provider 流式协议。
+- 编辑器 / AI 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；32 项编辑器 / AI 回归和 13 项侧栏回归见 [本轮验收记录](docs/audit-2026-10-29.md)。
 
 笔记保存在 `.data/notes/*.md`，图片保存在 `.data/assets/`，均被 Git 忽略。标题取首个一级标题。导入会新建笔记，导出为 Markdown。更换数据目录和端口：
 
@@ -101,12 +101,12 @@ Markdown 会被规范化，非逐字节往返。图片尺寸使用标题后缀 `
 
 重命名保存显示/导出名称，稳定 ID 和正文不变；名称元数据位于 `.data/notes/<id>.md.json`。导出的 HTML 内嵌样式、字体和本机图片，保留公式与图表。PDF 使用浏览器打印的“另存为 PDF”，不是 Electron 的原生 `printToPDF`；当前内置浏览器只验证了调用，未验证 PDF 文件保存。未使用的 Artifact 专用打开回调和重复菜单已删除。
 
-来源哈希、适配说明和字体来源位于 `packages/sidebar/src/artifact/provenance.json`。构建、类型检查、12 项 Node 测试、22 项编辑器回归及 11 项侧栏回归通过；AI 测试使用固定流式数据，不代表真实模型服务验收。
+来源哈希、适配说明和字体来源位于 `packages/sidebar/src/artifact/provenance.json`。构建、类型检查、16 项 Node 测试、32 项编辑器回归及 13 项侧栏回归通过；AI 测试使用固定流式数据，不代表真实模型服务验收。
 
 ## 统一白天 / 黑夜主题
 
 左上角「偏好设置」可选择白天或黑夜主题，底栏日月按钮可快速切换。正文、菜单、底栏、大纲、弹窗、代码块和图表使用 `packages/editor/src/themes.css` 的同一套颜色变量；界面和正文复用原 Artifact 字体。选择会保存在本机，页面首屏就应用已保存主题。
 
-Mermaid 图表按主题缓存，串行渲染以隔离不同实例；主题切换不修改 Markdown。HTML 导出保留当前主题和字体。新增主题/图表隔离回归后，浏览器验收共 22 项通过。
+Mermaid 图表按主题缓存，串行渲染以隔离不同实例；主题切换不修改 Markdown。HTML 导出保留当前主题和字体。主题/图表隔离包含在 32 项编辑器浏览器回归中。
 
 最近的清理范围和验证依据见 [2026-10-29 源码审计](docs/audit-2026-10-29.md)。

@@ -1,3 +1,4 @@
+import { runEditorChecks } from './editor-checks.js';
 import { createNoteSurface } from '../packages/editor/src/note-surface.js';
 import { bindBlockSource } from '../packages/editor/src/note-source.js';
 import { mountEditor } from '../packages/editor/src/index.js';
@@ -112,6 +113,12 @@ async function suite() {
   ($('suite') as HTMLButtonElement).disabled = true;
   $('results').replaceChildren();
   unhandled.length = 0;
+  const consoleErrors: string[] = [];
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    consoleErrors.push(args.map(String).join(' '));
+    originalError(...args);
+  };
   let passed = 0,
     failed = 0;
   let current: Surface | undefined,
@@ -490,11 +497,17 @@ async function suite() {
         b.remove();
       }
     });
-    await test('异步生命周期无未处理异常', async () => {
+    await current?.destroy();
+    current = undefined;
+    $('test-host').replaceChildren();
+    await runEditorChecks(test, $('test-host'));
+    await test('异步生命周期无未处理异常或控制台错误', async () => {
       await delay(200);
       assert(unhandled.length === 0, unhandled.join('; '));
+      assert(consoleErrors.length === 0, consoleErrors.join('; '));
     });
   } finally {
+    console.error = originalError;
     await current?.destroy();
     $('test-host').replaceChildren();
     ($('suite') as HTMLButtonElement).disabled = false;

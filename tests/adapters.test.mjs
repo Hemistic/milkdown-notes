@@ -36,7 +36,7 @@ test('AI lifecycle adapter rejects changed upstream source', async () => {
       },
     });
     assert.ok(callback);
-    await assert.rejects(() => callback({ path: file }), /AI disposal adapter needs review/);
+    await assert.rejects(() => callback({ path: file }), /Milkdown adapter needs review/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

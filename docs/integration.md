@@ -4,17 +4,12 @@
 
 ## 生命周期
 
-`await mountEditor(host, options)` 返回 `NoteEditor`。host 必须是浏览器中专用的空 HTMLElement；不要与框架渲染的子节点共享。重复挂载会报错。`destroy()` 可重复调用；销毁后 host 可以再次挂载，旧实例的其他操作会报错。创建异步，框架组件卸载时应等待创建完成再销毁。
+`await mountEditor(host, options)` 返回 `NoteEditor`。host 必须是浏览器中专用的空 HTMLElement；不要与框架渲染的子节点共享。每个 host 同时只挂载一个实例，不要并发创建。`destroy()` 可重复调用；销毁后 host 可以再次挂载，请停止使用旧实例。方法内部不重复检查已销毁状态。创建异步，框架组件卸载时应等待创建完成再销毁。
 
 ```ts
-let stopped = false;
 const ready = mountEditor(element, { markdown, onChange });
-ready.then((editor) => {
-  if (stopped) void editor.destroy();
-});
 // React effect cleanup / Vue onBeforeUnmount equivalent:
 const dispose = () => {
-  stopped = true;
   void ready.then((editor) => editor.destroy());
 };
 ```

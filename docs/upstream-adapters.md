@@ -2,7 +2,7 @@
 
 来源：Artinfact 0.13.41 的 `scripts/milkdown-slash.mjs`。这些是本项目对官方 Milkdown 实现的局部适配，**不是 Milkdown 官方发布的补丁**。不修改已安装原插件、不修改源项目、不写入任何 node_modules 文件。
 
-构建只接受 `@milkdown/crepe` 和 `@milkdown/components` 的 **7.22.3**。依赖锁定到精确版本。每个文本锚点都核对出现次数，不符合则构建失败；测试覆盖了上游文件改变后的拒绝路径。消费者安装已构建包无需再应用补丁。
+`package.json` 与锁文件将 Milkdown 依赖固定在 **7.22.3**。构建适配统一通过 `patchFile` 替换，每个文本锚点都核对出现次数，不符合则构建失败；测试覆盖了上游文件改变后的拒绝路径。消费者安装已构建包无需再应用补丁。
 
 | 模块                   | 修改与原因                                                                               | 验证边界                                                                 |
 | ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -14,6 +14,8 @@
 | components/image-block | 新增真实 alt 的响应式传递                                                                | 本次提取新增，配合公开 schema 配置保留图片 alt                           |
 | components/image-block | 只读图题输入框设置 readOnly                                                              | 实际 DOM 属性已确认；隐藏阅读态操作手柄                                  |
 | crepe/block-edit       | 支持 inline slash query 和仅删除触发范围，保留上游菜单与命令                             | 斜杠插表、公式插入后退出再触发                                           |
+
+`plugin-tooltip` 定位前同步获取选区坐标快照，再交给 Floating UI 异步计算；避免编辑器销毁后继续读取旧视图。浏览器回归包含快速编辑/销毁并检查控制台错误。
 
 模块内 `note-table.ts` 使用官方 `CellSelection.colSelection`、`setCellAttr`、`goToNextCell`、`addRowAfter`，在同一事务内恢复原文本光标。列手柄来自 Lucide `GripHorizontal`（横向 3×2），行手柄来自 `GripVertical`。对齐栏固定预留顶部空间，避免焦点引发布局跳动。
 

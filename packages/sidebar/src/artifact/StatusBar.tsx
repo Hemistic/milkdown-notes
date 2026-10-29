@@ -5,23 +5,22 @@ export interface StatusBarProps {
   words: number;
   chars: number;
   lines: number;
-  status?: string;
+  status: string;
   locale: 'en' | 'zh';
   spellcheckEnabled: boolean;
   onToggleSpellcheck: () => void;
-  editorControls?: boolean;
-  outlineOpen?: boolean;
-  theme?: NotesTheme;
-  editorMode?: NotesEditorMode;
-  sourceRevealEnabled?: boolean;
-  onToggleOutline?: () => void;
-  onToggleTheme?: () => void;
-  onSelectEditorMode?: (mode: NotesEditorMode) => void;
-  onToggleSourceReveal?: () => void;
-  showFileMenu?: boolean;
-  onImportDocument?: () => void;
-  onRenameDocument?: () => void;
-  onExportDocument?: (format: MarkdownExportFormat) => void;
+  ready: boolean;
+  outlineOpen: boolean;
+  theme: NotesTheme;
+  editorMode: NotesEditorMode;
+  sourceRevealEnabled: boolean;
+  onToggleOutline: () => void;
+  onToggleTheme: () => void;
+  onSelectEditorMode: (mode: NotesEditorMode) => void;
+  onToggleSourceReveal: () => void;
+  onImportDocument: () => void;
+  onRenameDocument: () => void;
+  onExportDocument: (format: MarkdownExportFormat) => void;
 }
 
 export const StatusBar: FC<StatusBarProps> = ({
@@ -32,16 +31,15 @@ export const StatusBar: FC<StatusBarProps> = ({
   locale,
   spellcheckEnabled,
   onToggleSpellcheck,
-  editorControls = false,
-  outlineOpen = false,
-  theme = 'light',
-  editorMode = 'normal',
-  sourceRevealEnabled = false,
+  ready,
+  outlineOpen,
+  theme,
+  editorMode,
+  sourceRevealEnabled,
   onToggleOutline,
   onToggleTheme,
   onSelectEditorMode,
   onToggleSourceReveal,
-  showFileMenu = false,
   onImportDocument,
   onRenameDocument,
   onExportDocument,
@@ -128,13 +126,13 @@ export const StatusBar: FC<StatusBarProps> = ({
   }, [fileMenuOpen]);
 
   useEffect(() => {
-    if (!showFileMenu) setFileMenuOpen(false);
-  }, [showFileMenu]);
+    if (!ready) setFileMenuOpen(false);
+  }, [ready]);
 
   return (
     <footer className="statusbar">
       <div className="status-left">
-        {showFileMenu ? (
+        {ready ? (
           <div className="snapshot-file-menu" ref={fileMenuRef}>
             <button
               type="button"
@@ -160,7 +158,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                   role="menuitem"
                   onClick={() => {
                     setFileMenuOpen(false);
-                    onRenameDocument?.();
+                    onRenameDocument();
                   }}
                 >
                   <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
@@ -168,28 +166,26 @@ export const StatusBar: FC<StatusBarProps> = ({
                   </svg>
                   <span>{copy.renameDocument}</span>
                 </button>
-                {onImportDocument ? (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setFileMenuOpen(false);
-                      onImportDocument?.();
-                    }}
-                  >
-                    <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
-                      <path d="M3 2.5h6l3 3v8H3z" />
-                      <path d="M9 2.5v3h3M8 7v5M5.8 9.2 8 7l2.2 2.2" />
-                    </svg>
-                    <span>{copy.openMarkdown}</span>
-                  </button>
-                ) : null}
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => {
                     setFileMenuOpen(false);
-                    onExportDocument?.('markdown');
+                    onImportDocument();
+                  }}
+                >
+                  <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+                    <path d="M3 2.5h6l3 3v8H3z" />
+                    <path d="M9 2.5v3h3M8 7v5M5.8 9.2 8 7l2.2 2.2" />
+                  </svg>
+                  <span>{copy.openMarkdown}</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setFileMenuOpen(false);
+                    onExportDocument('markdown');
                   }}
                 >
                   <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
@@ -203,7 +199,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                   role="menuitem"
                   onClick={() => {
                     setFileMenuOpen(false);
-                    onExportDocument?.('html');
+                    onExportDocument('html');
                   }}
                 >
                   <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
@@ -217,7 +213,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                   role="menuitem"
                   onClick={() => {
                     setFileMenuOpen(false);
-                    onExportDocument?.('pdf');
+                    onExportDocument('pdf');
                   }}
                 >
                   <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
@@ -230,10 +226,10 @@ export const StatusBar: FC<StatusBarProps> = ({
             ) : null}
           </div>
         ) : null}
-        <span className="status-msg">{status ?? ''}</span>
+        <span className="status-msg">{status}</span>
       </div>
       <div className="status-actions">
-        {editorControls ? (
+        {ready ? (
           <>
             <button
               type="button"
@@ -275,7 +271,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                 aria-pressed={editorMode === 'normal'}
                 aria-label={copy.normal}
                 title={copy.normal}
-                onClick={() => onSelectEditorMode?.('normal')}
+                onClick={() => onSelectEditorMode('normal')}
               >
                 <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
                   <rect x="3" y="2.75" width="10" height="10.5" rx="1" />
@@ -288,7 +284,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                 aria-pressed={editorMode === 'focus'}
                 aria-label={copy.focus}
                 title={copy.focus}
-                onClick={() => onSelectEditorMode?.('focus')}
+                onClick={() => onSelectEditorMode('focus')}
               >
                 <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
                   <path d="M6 3H3v3M10 3h3v3M3 10v3h3M13 10v3h-3" />
@@ -300,7 +296,7 @@ export const StatusBar: FC<StatusBarProps> = ({
                 aria-pressed={editorMode === 'typewriter'}
                 aria-label={copy.typewriter}
                 title={copy.typewriter}
-                onClick={() => onSelectEditorMode?.('typewriter')}
+                onClick={() => onSelectEditorMode('typewriter')}
               >
                 <span className="editor-mode-typewriter" aria-hidden="true">
                   T

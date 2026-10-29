@@ -23,13 +23,9 @@ export async function mountSidebar(
     root.querySelector('[data-id="' + id + '"]') as T;
   const files = options.files;
   const events = new AbortController();
-  let disposed = false;
   let operations: Promise<unknown> = Promise.resolve();
   const serial = <T>(action: () => Promise<T>) => {
-    const result = operations.then(() => {
-      if (disposed) throw Error('Sidebar has been destroyed');
-      return action();
-    });
+    const result = operations.then(action);
     operations = result.catch(() => {});
     return result;
   };
@@ -63,6 +59,9 @@ export async function mountSidebar(
   const report = (error: unknown) => {
     status('操作失败：' + String(error));
     options.onError?.(error);
+  };
+  const perform = (action: () => Promise<unknown>) => {
+    void serial(action).catch(report);
   };
   async function saveChanges() {
     status('正在保存…');
@@ -102,7 +101,7 @@ export async function mountSidebar(
       button.setAttribute('aria-current', String(note.id === id));
       button.onclick = () => {
         menu.close();
-        void serial(() => open(note.id)).catch(report);
+        perform(() => open(note.id));
       };
       nav.append(button);
     }
@@ -166,7 +165,7 @@ export async function mountSidebar(
   }
   $('new').onclick = () => {
     menu.close();
-    void serial(() => create()).catch(report);
+    perform(() => create());
   };
   $('undo').onclick = () => {
     menu.close();
@@ -178,7 +177,7 @@ export async function mountSidebar(
   };
   $('preview').onclick = () => {
     menu.close();
-    void serial(async () => {
+    perform(async () => {
       if (!editor) return;
       await flush();
       const markdown = editor.getMarkdown();
@@ -189,7 +188,7 @@ export async function mountSidebar(
       $<HTMLButtonElement>('redo').disabled = readOnly;
       await mount(markdown);
       status(readOnly ? '阅读模式' : '已保存');
-    }).catch(report);
+    });
   };
   function syncTheme() {
     root.dataset.theme = theme;
@@ -213,28 +212,28 @@ export async function mountSidebar(
     ['locale-en', 'en'],
   ] as const) {
     $(button).onclick = () =>
-      void serial(async () => {
+      perform(async () => {
         if (!editor) return;
         await flush();
         locale = next;
         await mount(editor.getMarkdown());
         $('locale-zh').setAttribute('aria-pressed', String(locale === 'zh-CN'));
         $('locale-en').setAttribute('aria-pressed', String(locale === 'en'));
-      }).catch(report);
+      });
   }
   $('import').onclick = () => {
     menu.close();
     $<HTMLInputElement>('file').click();
   };
-  $<HTMLInputElement>('file').onchange = () =>
-    void (async () => {
-      const file = $<HTMLInputElement>('file').files?.[0];
-      if (file) await serial(() => importFile(file));
-      $<HTMLInputElement>('file').value = '';
-    })().catch(report);
+  $<HTMLInputElement>('file').onchange = () => {
+    const input = $<HTMLInputElement>('file');
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) perform(() => importFile(file));
+  };
   $('export').onclick = () => {
     menu.close();
-    void serial(() => exportDocument('markdown')).catch(report);
+    perform(() => exportDocument('markdown'));
   };
   function savePreferences() {
     options.onPreferencesChange?.({
@@ -280,12 +279,11 @@ export async function mountSidebar(
       status: statusText,
       locale: locale === 'en' ? 'en' : 'zh',
       spellcheckEnabled: spellcheck,
-      editorControls: !!editor,
+      ready: !!editor,
       outlineOpen,
       theme,
       editorMode,
       sourceRevealEnabled: sourceReveal,
-      showFileMenu: !!editor,
       onToggleSpellcheck() {
         spellcheck = !spellcheck;
         editor?.setSpellcheck(spellcheck);
@@ -315,7 +313,7 @@ export async function mountSidebar(
       },
       onImportDocument: () => $<HTMLInputElement>('file').click(),
       onRenameDocument: renameDocument,
-      onExportDocument: (format) => void serial(() => exportDocument(format)).catch(report),
+      onExportDocument: (format) => perform(() => exportDocument(format)),
     });
   }
   function renameDocument() {
@@ -337,12 +335,12 @@ export async function mountSidebar(
     if ($<HTMLDialogElement>('rename-dialog').returnValue !== 'save') return;
     const noteId = id,
       title = $<HTMLInputElement>('rename-name').value.trim().replace(/\.md$/i, '');
-    void serial(async () => {
+    perform(async () => {
       await flush();
       await files.rename(noteId, title);
       await refresh();
       status('已重命名');
-    }).catch(report);
+    });
   });
   async function importFile(file: File) {
     return create(await file.text(), safeName(file.name.replace(/\.markdown$/i, '')));
@@ -409,7 +407,6 @@ export async function mountSidebar(
     { signal: events.signal },
   );
   async function release() {
-    disposed = true;
     clearTimeout(timer);
     events.abort();
     outlineObserver.disconnect();

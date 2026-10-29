@@ -107,7 +107,6 @@ const english: Record<string, string> = {
   '输入 Mermaid 图表代码': 'Enter Mermaid source',
   '图表语法有误，请编辑下方代码。': 'Invalid diagram syntax; edit the source below.',
   '反向链接 · ': 'Backlinks · ',
-  引用暂时无法打开: 'Unable to open reference',
   '存在同名笔记，请使用笔记 ID 区分': 'Ambiguous note title; use an ID',
   '未找到此笔记：': 'Note not found: ',
 };

@@ -300,6 +300,67 @@ async function suite() {
       );
       first.setTheme('light');
     });
+    await test('底栏点击：大纲、三种模式、拼写、源码与阅读切换', async () => {
+      const host = $('left');
+      const button = (selector: string) => host.querySelector<HTMLButtonElement>(selector)!;
+      button('[data-testid="outline-toggle"]').click();
+      assert(!host.querySelector<HTMLElement>('[data-id="outline"]')!.hidden, '大纲未打开');
+      button('[aria-label="专注模式"]').click();
+      await until(
+        () =>
+          host.querySelector<HTMLElement>('[data-id="document-layout"]')!.dataset.mode === 'focus',
+      );
+      assert(host.querySelector<HTMLElement>('[data-id="outline"]')!.hidden, '专注模式未收起大纲');
+      button('[aria-label="打字机模式"]').click();
+      await until(
+        () =>
+          host.querySelector<HTMLElement>('[data-id="document-layout"]')!.dataset.mode ===
+          'typewriter',
+      );
+      button('[aria-label="正常模式"]').click();
+      button('.spellcheck-toggle').click();
+      assert(host.querySelector<HTMLElement>('.ProseMirror')!.spellcheck, '拼写开关未生效');
+      button('[data-testid="source-reveal-toggle"]').click();
+      host
+        .querySelector('.ProseMirror h1')!
+        .dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 3 }));
+      assert(host.querySelector('.mn-block-source'), '源码开关未生效');
+      host
+        .querySelector('.mn-block-source')!
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      button('[data-id="preview"]').click();
+      await until(
+        () => host.querySelector('.ProseMirror')?.getAttribute('contenteditable') === 'false',
+      );
+      assert(!first.editor.ai, '阅读模式仍暴露 AI');
+      button('[data-id="preview"]').click();
+      await until(
+        () =>
+          !!first.editor?.ai &&
+          host.querySelector('.ProseMirror')?.getAttribute('contenteditable') === 'true',
+      );
+      assert(host.querySelector<HTMLElement>('.ProseMirror')!.spellcheck, '重挂丢失拼写偏好');
+    });
+    await test('文件菜单点击：重命名对话框提交到文件接口', async () => {
+      const host = $('left');
+      host.querySelector<HTMLButtonElement>('[data-testid="markdown-file-menu-trigger"]')!.click();
+      await until(() => !!host.querySelector('.snapshot-file-menu-popover'));
+      host
+        .querySelector<HTMLButtonElement>('.snapshot-file-menu-popover [role="menuitem"]')!
+        .click();
+      const dialog = host.querySelector<HTMLDialogElement>('[data-id="rename-dialog"]')!;
+      assert(dialog.open, '重命名窗口未打开');
+      const input = host.querySelector<HTMLInputElement>('[data-id="rename-name"]')!;
+      input.value = '菜单重命名';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      dialog.querySelector<HTMLButtonElement>('[value="save"]')!.click();
+      await until(() => store.notes.get(first.documentId)?.title === '菜单重命名');
+      assert(
+        !dialog.open &&
+          host.querySelector('[data-id="notes"]')?.textContent?.includes('菜单重命名'),
+        '名称未刷新到历史列表',
+      );
+    });
     await test('卸载取消 AI，清理浮层/事件，容器可以再次挂载', async () => {
       aiMode = 'slow';
       first.editor.ai!.run('卸载测试', 'document');

@@ -37,18 +37,23 @@ export interface NoteEditor {
   settled(): Promise<void>;
   destroy(): Promise<void>;
 }
-const mounted = new WeakSet<HTMLElement>();
 /** Browser-only. Load style.css once. Use a dedicated empty host element. */
 export async function mountEditor(
   host: HTMLElement,
   options: EditorOptions = {},
 ): Promise<NoteEditor> {
-  if (mounted.has(host) || host.childNodes.length)
-    throw Error('Editor host must be empty and unmounted');
-  mounted.add(host);
+  if (host.childNodes.length) throw Error('Editor host must be empty');
   const releaseLocale = registerLocale(host, options);
   const originalClass = host.className,
     originalTheme = host.getAttribute('data-theme');
+  const restoreHost = () => {
+    host.replaceChildren();
+    host.className = originalClass;
+    delete host.dataset.readonly;
+    if (originalTheme === null) delete host.dataset.theme;
+    else host.dataset.theme = originalTheme;
+    releaseLocale();
+  };
   host.dataset.theme = options.theme ?? 'light';
   const listeners = new Set<(markdown: string) => void>();
   if (options.onChange) listeners.add(options.onChange);
@@ -69,18 +74,16 @@ export async function mountEditor(
   try {
     surface = await createNoteSurface(host, options.markdown ?? '', emit, options);
   } catch (error) {
-    releaseLocale();
-    mounted.delete(host);
-    host.replaceChildren();
-    host.className = originalClass;
+    restoreHost();
     throw error;
   }
-  const assertLive = () => {
-    if (disposed) throw Error('Editor has been destroyed');
-  };
   const source = bindBlockSource(host, surface.editor, options);
+  const closeUndoGroup = () =>
+    surface.editor.action((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      view.dispatch(closeHistory(view.state.tr));
+    });
   const command = (fn: typeof undo) => {
-    assertLive();
     if (options.readOnly) return false;
     return surface.editor.action((ctx) => {
       const view = ctx.get(editorViewCtx);
@@ -90,43 +93,30 @@ export async function mountEditor(
   return {
     ai: options.aiProvider && !options.readOnly ? bindNoteAI(surface.editor) : undefined,
     getMarkdown() {
-      assertLive();
       return surface.markdown();
     },
     setMarkdown(value) {
-      assertLive();
       source.cancel();
-      surface.editor.action((ctx) => {
-        const v = ctx.get(editorViewCtx);
-        v.dispatch(closeHistory(v.state.tr));
-      });
+      closeUndoGroup();
       surface.setMarkdown(value);
-      surface.editor.action((ctx) => {
-        const v = ctx.get(editorViewCtx);
-        v.dispatch(closeHistory(v.state.tr));
-      });
+      closeUndoGroup();
     },
     onChange(fn) {
-      assertLive();
       listeners.add(fn);
       return () => listeners.delete(fn);
     },
     focus() {
-      assertLive();
       surface.editor.action((ctx) => ctx.get(editorViewCtx).focus());
     },
     undo: () => command(undo),
     redo: () => command(redo),
     setTheme(theme) {
-      assertLive();
       host.dataset.theme = theme;
     },
     setSourceReveal(value) {
-      assertLive();
       source.setEnabled(value);
     },
     setSpellcheck(value) {
-      assertLive();
       source.setSpellcheck(value);
     },
     settled: () => settleNoteDiagrams(host),
@@ -138,13 +128,7 @@ export async function mountEditor(
       try {
         await surface.destroy();
       } finally {
-        host.replaceChildren();
-        host.className = originalClass;
-        delete host.dataset.readonly;
-        if (originalTheme === null) delete host.dataset.theme;
-        else host.dataset.theme = originalTheme;
-        mounted.delete(host);
-        releaseLocale();
+        restoreHost();
       }
     },
   };

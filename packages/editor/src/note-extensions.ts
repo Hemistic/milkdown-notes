@@ -442,25 +442,28 @@ export function bindNoteExtensions(host: HTMLElement, options: NoteEditingOption
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = ref.label;
-      button.onclick = (e) => {
+      button.onclick = async (e) => {
         e.stopPropagation();
-        void options.onReference?.(ref);
+        try {
+          await options.onReference?.(ref);
+        } catch (error) {
+          message(translateFor(host, '打开引用失败：') + String(error));
+        }
       };
       back.append(button);
     }
     host.append(back);
   }
-  const click = (event: MouseEvent) => {
-    const target = event.target as Element,
-      heading = target.closest<HTMLElement>('[data-note-heading]');
+  const click = async (event: MouseEvent) => {
+    const target = event.target as Element;
+    const heading = target.closest<HTMLElement>('[data-note-heading]');
     if (heading) {
       event.preventDefault();
       event.stopPropagation();
-      const index = Number(heading.dataset.noteHeading),
-        element = host.querySelectorAll<HTMLElement>(
-          '.ProseMirror h1,.ProseMirror h2,.ProseMirror h3,.ProseMirror h4,.ProseMirror h5,.ProseMirror h6',
-        )[index];
-      element?.scrollIntoView({ block: 'nearest' });
+      const headings = host.querySelectorAll<HTMLElement>(
+        '.ProseMirror h1,.ProseMirror h2,.ProseMirror h3,.ProseMirror h4,.ProseMirror h5,.ProseMirror h6',
+      );
+      headings[Number(heading.dataset.noteHeading)].scrollIntoView({ block: 'nearest' });
       return;
     }
     const link = target.closest<HTMLElement>('[data-note-wiki]');
@@ -468,27 +471,29 @@ export function bindNoteExtensions(host: HTMLElement, options: NoteEditingOption
     event.preventDefault();
     event.stopPropagation();
     const value = link.dataset.noteWiki!;
-    if (options.onWikiLink) {
-      void Promise.resolve()
-        .then(() => options.onWikiLink!(value))
-        .catch(() => message(translateFor(host, '引用暂时无法打开')));
-      return;
-    }
-    const matches =
-      options.references?.().filter((ref) => ref.id === value || ref.label === value) ?? [];
     host.querySelector('.mn-note-wiki-status')?.remove();
-    if (matches.length === 1) {
-      void Promise.resolve()
-        .then(() => options.onReference?.(matches[0]))
-        .catch(() => message(translateFor(host, '引用暂时无法打开')));
-    } else
-      message(
-        matches.length
-          ? translateFor(host, '存在同名笔记，请使用笔记 ID 区分')
-          : translateFor(host, '未找到此笔记：') + value,
-      );
+    try {
+      if (options.onWikiLink) {
+        await options.onWikiLink(value);
+        return;
+      }
+      const matches =
+        options.references?.().filter((ref) => ref.id === value || ref.label === value) ?? [];
+      if (matches.length !== 1) {
+        message(
+          matches.length
+            ? translateFor(host, '存在同名笔记，请使用笔记 ID 区分')
+            : translateFor(host, '未找到此笔记：') + value,
+        );
+        return;
+      }
+      await options.onReference?.(matches[0]);
+    } catch (error) {
+      message(translateFor(host, '打开引用失败：') + String(error));
+    }
   };
   const message = (text: string) => {
+    host.querySelector('.mn-note-wiki-status')?.remove();
     const status = document.createElement('small');
     status.className = 'mn-note-wiki-status';
     status.setAttribute('role', 'status');

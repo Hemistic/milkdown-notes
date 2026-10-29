@@ -1,16 +1,11 @@
 import { build } from 'esbuild';
-import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
+import { mkdir, writeFile, cp, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { milkdownSlashPlugin } from './milkdown-adapters.mjs';
 import { writeNotices } from './notices.mjs';
 const root = 'packages/editor';
-for (const name of ['@milkdown/crepe', '@milkdown/components']) {
-  const pkg = JSON.parse(await readFile(`node_modules/${name}/package.json`));
-  if (pkg.version !== '7.22.3')
-    throw Error(`Adapter supports ${name} 7.22.3 only; found ${pkg.version}`);
-}
 const workspace = fileURLToPath(new URL('../', import.meta.url));
 if (resolve('.') !== resolve(workspace)) throw Error('Run build from the repository root');
 // Replace only the three known generated output directories.
