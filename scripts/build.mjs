@@ -114,4 +114,12 @@ await build({
   target: 'es2022',
   external: ['@local/milkdown-sidebar', '@local/milkdown-notes'],
 });
+await build({
+  entryPoints: ['examples/live-ai-test.ts'],
+  outfile: 'apps/local/dist/live-ai-test.js',
+  bundle: true,
+  format: 'esm',
+  target: 'es2022',
+  external: ['@local/milkdown-sidebar', '@local/milkdown-notes'],
+});
 console.log('Built editor, sidebar, local app and integration examples.');

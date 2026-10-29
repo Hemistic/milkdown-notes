@@ -1,4 +1,9 @@
-import { mountSidebar, createHttpFiles, type SidebarPreferences } from '@local/milkdown-sidebar';
+import {
+  mountSidebar,
+  createHttpFiles,
+  createHttpAIProvider,
+  type SidebarPreferences,
+} from '@local/milkdown-sidebar';
 import { welcome } from './welcome.js';
 
 const files = createHttpFiles();
@@ -19,10 +24,12 @@ try {
     await files.write('welcome', welcome);
   }
   const notes = await files.list();
+  const ai = await (await fetch('/api/ai')).json();
   const sidebar = await mountSidebar(document.getElementById('sidebar')!, {
     files,
     initialNoteId: notes.find((note) => note.id === 'welcome')?.id ?? notes[0].id,
     preferences,
+    aiProvider: ai.configured ? createHttpAIProvider() : undefined,
     onPreferencesChange(value) {
       localStorage.setItem(preferenceKey, JSON.stringify(value));
     },

@@ -17,6 +17,10 @@
 
 `plugin-tooltip` 定位前同步获取选区坐标快照，再交给 Floating UI 异步计算；避免编辑器销毁后继续读取旧视图。浏览器回归包含快速编辑/销毁并检查控制台错误。
 
+`crepe/feature/ai` 的 `abortAICmd({keep:true})` 改用 `endStreamingCmd({diffReview:true})`，同时保留 AI 对 diff 的归属。原上游直接提交半截正文，导致 Esc 绕过接受/放弃；本项目的 Esc 和公开 `abort(true)` 都将部分结果送入审查。`abort(false)` 仍恢复原文。真实模型与固定数据均覆盖该路径。
+
+全文 AI 使用 `AllSelection`；重新改写时，上游按钮在原范围覆盖整个文档的情况下也恢复 `AllSelection`，其余范围继续使用 `TextSelection`。这样完整标题节点能被替换，Markdown 标记不会作为旧标题的文本重复插入。
+
 模块内 `note-table.ts` 使用官方 `CellSelection.colSelection`、`setCellAttr`、`goToNextCell`、`addRowAfter`，在同一事务内恢复原文本光标。列手柄来自 Lucide `GripHorizontal`（横向 3×2），行手柄来自 `GripVertical`。对齐栏固定预留顶部空间，避免焦点引发布局跳动。
 
 模块内 `note-image.ts` 使用 Milkdown 的 schema 配置接口保留 `alt` 与 `caption`。上游把 alt 解释为 ratio，本项目改用 title 中的可选 `{mn-ratio:0.70}` 后缀，比例默认为 1。这个扩展约定需其他宿主明确支持；不自动把旧数字 alt 猜成比例。

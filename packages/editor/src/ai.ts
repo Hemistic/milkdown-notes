@@ -1,5 +1,5 @@
 import { commandsCtx, editorViewCtx, type Editor } from '@milkdown/core';
-import { TextSelection } from '@milkdown/prose/state';
+import { AllSelection } from '@milkdown/prose/state';
 import { runAICmd, abortAICmd } from '@milkdown/crepe/feature/ai';
 import { streamingPluginKey } from '@milkdown/plugin-streaming';
 import {
@@ -30,14 +30,7 @@ export function bindNoteAI(editor: Editor): NoteAI {
         )
           return false;
         if (scope === 'document')
-          view.dispatch(
-            view.state.tr.setSelection(
-              TextSelection.between(
-                view.state.doc.resolve(0),
-                view.state.doc.resolve(view.state.doc.content.size),
-              ),
-            ),
-          );
+          view.dispatch(view.state.tr.setSelection(new AllSelection(view.state.doc)));
         return ctx.get(commandsCtx).call(runAICmd.key, { instruction });
       });
     },

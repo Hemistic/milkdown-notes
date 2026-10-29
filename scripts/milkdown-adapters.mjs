@@ -46,6 +46,25 @@ export const milkdownSlashPlugin = () => ({
             anchor,
             '} finally {\n    if (!ctx.isInjected(aiSessionCtx.key)) return;\n    const current = ctx.get(aiSessionCtx.key);',
           );
+          // Keeping a partial AI response must still require an explicit diff decision.
+          replace(
+            'import { TextSelection, PluginKey, Plugin }',
+            'import { AllSelection, TextSelection, PluginKey, Plugin }',
+          );
+          replace(
+            'TextSelection.create(editorView.state.doc, from, to)',
+            'from === 0 && to === doc.content.size ? new AllSelection(doc) : TextSelection.create(doc, from, to)',
+          );
+          replace(
+            'commands.call(abortStreamingCmd.key, options);',
+            `if (options?.keep) {
+        const current = ctx.get(aiSessionCtx.key);
+        ctx.set(aiSessionCtx.key, { ...current, diffOwnedByAI: true });
+        commands.call(endStreamingCmd.key, { diffReview: true });
+      } else {
+        commands.call(abortStreamingCmd.key, { keep: false });
+      }`,
+          );
           const placement = 'floatingUIOptions: {\n        placement: "bottom"';
           replace(
             placement,

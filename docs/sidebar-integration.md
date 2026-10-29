@@ -108,7 +108,26 @@ if (ai) {
 import { createOpenAIProvider, createAnthropicProvider } from '@local/milkdown-notes/providers';
 ```
 
-配置类型随包发布；也可以直接使用宿主自己的流式 SDK。浏览器通常接宿主代理，避免把服务端密钥打包到前端。本项目没有预置模型账户，也没有新增 `/api/ai` 服务；固定流式回归不代表真实模型服务已配置。
+配置类型随包发布；也可以直接使用宿主自己的流式 SDK。本地应用通过服务端 `/api/ai` 代理模型流。配置项目根目录的 `.env.local` 后重启服务：
+
+```dotenv
+AI_PROVIDER=openai
+AI_BASE_URL=https://api.openai.com
+AI_MODEL=gpt-6-luna
+AI_REASONING_EFFORT=medium
+AI_API_KEY=your-local-key
+```
+
+`.env.local` 已被 Git 忽略，密钥只在 Node 服务中使用，不返回浏览器。Milkdown provider 会给 `AI_BASE_URL` 自动追加 `/v1/chat/completions`，因此地址不包含 `/v1`。Anthropic 可设 `AI_PROVIDER=anthropic`，对应地址自动追加 `/v1/messages`。
+
+宿主使用 `createHttpAIProvider(endpoint = '/api/ai')` 连接同一服务；它是标准 `AIProvider`，可直接传给 `mountSidebar`。
+
+- `GET /api/ai` 返回 configured、provider、model、reasoningEffort，不含认证信息。
+- `POST /api/ai` 接收 AIPromptContext JSON；返回逐行 JSON：`{"text":"增量"}`，最后是 `{"done":true}`；失败返回 `{"error":"原因"}`。
+- 浏览器取消会关闭响应，并通过 AbortController 取消上游请求。中途失败不会标记为完成；没有 done 的截断响应也不会作为正常生成接受。
+- 真实模型验收页：`/example/live-ai.html`。只有点击运行才发起请求，示例文件保存在内存；`?case=断线` 或 `?case=Esc` 可单独重测对应项目。
+
+模型与参数核对依据：[GPT-6 Luna 官方文档](https://developers.openai.com/api/docs/models/gpt-6-luna)。实际结果见 [真实 AI 验收](live-ai-verification.md)。
 
 ## 导出交接
 

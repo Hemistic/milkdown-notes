@@ -1,9 +1,15 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { loadEnvFile } from 'node:process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStorage } from './storage.mjs';
+import { configuredAI, streamAI } from './ai.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const envFile = path.join(root, '.env.local');
+if (existsSync(envFile)) loadEnvFile(envFile);
+const ai = configuredAI();
 const port = Number(process.env.PORT ?? 43150);
 const storage = createStorage(process.env.NOTES_DATA_DIR ?? path.join(root, '.data'));
 await storage.init();
@@ -54,6 +60,23 @@ http
       )
         return reply(403, { error: 'Same-origin requests only' });
       if (route === '/api/notes' && req.method === 'GET') return reply(200, await storage.list());
+      if (route === '/api/ai' && req.method === 'GET')
+        return reply(200, {
+          configured: !!ai,
+          provider: ai?.provider,
+          model: ai?.model,
+          reasoningEffort: ai?.reasoningEffort,
+        });
+      if (route === '/api/ai' && req.method === 'POST') {
+        if (!ai) return reply(503, { error: 'Configure AI_MODEL in .env.local first' });
+        const context = JSON.parse((await body(req)).toString('utf8'));
+        if (
+          !['document', 'selection', 'instruction'].every((key) => typeof context[key] === 'string')
+        )
+          return reply(400, { error: 'AI context requires document, selection and instruction' });
+        await streamAI(res, ai.stream, context);
+        return;
+      }
       if (route.startsWith('/api/notes/')) {
         const id = route.slice(11);
         if (req.method === 'GET') return reply(200, { id, markdown: await storage.read(id) });

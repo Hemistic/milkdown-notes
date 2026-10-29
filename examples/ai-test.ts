@@ -230,11 +230,27 @@ async function suite() {
     });
     await test('流式取消并保留已生成部分', async () => {
       const s = await fresh(provider(replacement, 'slow'));
+      const before = s.markdown();
       run(s);
       await delay(350);
       cancel(s, true);
       await delay(30);
-      assert(!streaming(s)?.active && s.markdown().includes('改写'), '保留部分输出失败');
+      assert(!streaming(s)?.active && review(s)?.active, '部分输出未进入 diff 审查');
+      assert(s.markdown() === before && events.length === 0, '未接受的部分输出进入正文');
+      accept(s);
+      assert(s.markdown().includes('改写'), '接受部分输出失败');
+    });
+    await test('Escape 保留部分输出必须先审查，放弃不保存草稿', async () => {
+      const s = await fresh(provider(replacement, 'slow'));
+      const before = s.markdown();
+      run(s);
+      await delay(350);
+      view(s).dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await until(() => !!review(s)?.active);
+      assert(s.markdown() === before && events.length === 0, 'Esc 把草稿直接写入正文');
+      reject(s);
+      await delay(30);
+      assert(s.markdown() === before && events.length === 0, '放弃部分输出改变正文');
     });
     for (const mode of ['early-error', 'error'])
       await test(mode === 'error' ? '流中失败回退并解锁' : '首字前失败回退并解锁', async () => {
@@ -501,6 +517,32 @@ async function suite() {
     current = undefined;
     $('test-host').replaceChildren();
     await runEditorChecks(test, $('test-host'));
+    await test('全文 AI 改写替换完整标题节点，不把 Markdown 标记当成正文', async () => {
+      const selections: string[] = [];
+      const editor = await mountEditor($('test-host'), {
+        markdown: '# 原标题\n\n原段落。\n',
+        aiProvider: async function* (context) {
+          selections.push(context.selection);
+          yield '# 新标题\n\n新段落。\n';
+        },
+      });
+      try {
+        editor.ai!.run('改写全文', 'document');
+        await until(() => editor.ai!.getState().status === 'review');
+        $('test-host')
+          .querySelector<HTMLButtonElement>('.milkdown-ai-diff-actions-btn-retry')!
+          .click();
+        await until(() => selections.length === 2 && editor.ai!.getState().status === 'review');
+        assert(selections[0] === selections[1], '全文重试丢失选区结构');
+        editor.ai!.accept();
+        assert(
+          editor.getMarkdown() === '# 新标题\n\n新段落。\n',
+          '全文改写残留旧标题或多余 Markdown 标记：' + editor.getMarkdown(),
+        );
+      } finally {
+        await editor.destroy();
+      }
+    });
     await test('异步生命周期无未处理异常或控制台错误', async () => {
       await delay(200);
       assert(unhandled.length === 0, unhandled.join('; '));

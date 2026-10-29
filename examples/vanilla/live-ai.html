@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>真实 AI 验收 · Milkdown Notes</title>
+    <link rel="stylesheet" href="/sidebar/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@local/milkdown-notes": "/editor/index.js",
+          "@local/milkdown-sidebar": "/sidebar/index.js"
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 24px;
+        font: 14px/1.7 system-ui;
+        color: #28332f;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      button {
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+      #sidebar {
+        height: 360px;
+        max-width: 680px;
+        border: 1px solid #ddd;
+        margin: 18px 0;
+      }
+      [data-result='pass'] {
+        color: #287140;
+      }
+      [data-result='fail'] {
+        color: #b42318;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: #f4f5f4;
+        padding: 12px;
+      }
+      #status {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/">返回笔记</a>
+    <h1>真实 AI 验收</h1>
+    <p id="model">读取模型配置…</p>
+    <p>
+      使用专门的雨天阅读示例，文件仅保存在本页内存。点击后会实际请求配置的模型，验证流式、取消、重试与
+      diff；断线测试在真实输出中主动中断一次。
+    </p>
+    <button id="suite" disabled>运行真实 AI 回归</button>
+    <p id="status" role="status">等待开始</p>
+    <ol id="results"></ol>
+    <div id="sidebar"></div>
+    <details>
+      <summary>请求分段与耗时记录</summary>
+      <pre id="metrics"></pre>
+    </details>
+    <script type="module" src="/live-ai-test.js"></script>
+  </body>
+</html>

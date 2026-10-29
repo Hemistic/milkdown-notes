@@ -99,21 +99,29 @@ export async function createNoteSurface(
   const changes = $prose(
     () =>
       new Plugin({
-        view: () => ({
-          update: (view, previous) => {
-            if (
-              options.readOnly ||
-              busy(view.state) ||
-              (previous.doc.eq(view.state.doc) && !busy(previous))
-            )
-              return;
-            if (busy(previous))
-              queueMicrotask(() => {
-                if (!view.isDestroyed && !busy(view.state)) notify(view.state.doc);
-              });
-            else notify(view.state.doc);
-          },
-        }),
+        view: (view) => {
+          let lastDoc = view.state.doc;
+          const publish = () => {
+            if (lastDoc.eq(view.state.doc)) return;
+            lastDoc = view.state.doc;
+            notify(lastDoc);
+          };
+          return {
+            update: (view, previous) => {
+              if (
+                options.readOnly ||
+                busy(view.state) ||
+                (previous.doc.eq(view.state.doc) && !busy(previous))
+              )
+                return;
+              if (busy(previous))
+                queueMicrotask(() => {
+                  if (!view.isDestroyed && !busy(view.state)) publish();
+                });
+              else publish();
+            },
+          };
+        },
       }),
   );
   const evidence = $prose(

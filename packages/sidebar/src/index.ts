@@ -10,6 +10,7 @@ import type { SidebarOptions, NoteSidebar, SidebarPreferences } from './types.js
 export type { SidebarOptions, NoteSidebar, SidebarPreferences, NoteExport } from './types.js';
 export type { MarkdownExportFormat } from './artifact/types.js';
 export { createHttpFiles } from './files.js';
+export { createHttpAIProvider } from './ai.js';
 export type { NoteFiles, NoteDocument, NoteSummary } from './files.js';
 import { setupMenu, setIcon } from './menu.js';
 export async function mountSidebar(
