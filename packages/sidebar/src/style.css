@@ -57,7 +57,7 @@
   }
   .paper {
     max-width: 880px;
-    min-height: 100vh;
+    min-height: 100%;
     margin: 0 auto;
     padding: 74px 30px 140px;
   }
@@ -282,8 +282,5 @@
     height: 100%;
     min-width: 0;
     isolation: isolate;
-  }
-  & .paper {
-    min-height: 100%;
   }
 }

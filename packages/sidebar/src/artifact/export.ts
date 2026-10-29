@@ -33,7 +33,7 @@ export async function exportHtml(host: HTMLElement, title: string, stylesheets: 
   const copy = source.cloneNode(true) as HTMLElement;
   copy
     .querySelectorAll(
-      '.ProseMirror-widget,.prosemirror-virtual-cursor,.milkdown-toolbar,.tools,.handle,.mn-note-selection-toolbar,.mn-note-math-source',
+      '.ProseMirror-widget,.prosemirror-virtual-cursor,.milkdown-toolbar,.tools,.handle,.mn-note-math-source',
     )
     .forEach((el) => el.remove());
   copy.removeAttribute('role');
@@ -54,12 +54,10 @@ export async function exportHtml(host: HTMLElement, title: string, stylesheets: 
     el.removeAttribute('contenteditable');
     el.removeAttribute('tabindex');
     el.removeAttribute('draggable');
-    el.removeAttribute('data-mn-source-block');
   }
   await Promise.all(
     Array.from(copy.querySelectorAll('img')).map(async (img) => {
-      if (new URL(img.src).origin === location.origin && !img.src.startsWith('data:'))
-        img.src = await dataUrl(img.src);
+      if (new URL(img.src).origin === location.origin) img.src = await dataUrl(img.src);
     }),
   );
   async function embedCss(css: string, base: string) {

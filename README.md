@@ -21,8 +21,8 @@ npm start
 - `npm run format:check`：检查源码格式。
 - `npm run dev`：构建后启动；当前不含热更新，修改后重新构建并刷新。
 - `npm run typecheck`：TypeScript 检查。
-- `npm test`：22 个测试，覆盖存储、HTTP 文件/图片服务、AI 转发/取消/断线恢复、路径边界和上游适配。
-- 编辑器 / AI 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；34 项编辑器 / AI 回归和 15 项侧栏回归见 [本轮验收记录](docs/audit-2026-10-29.md)。
+- `npm test`：23 个测试，覆盖存储、HTTP 文件/图片服务、AI 转发/取消/断线恢复、字数统计、路径边界和上游适配。
+- 编辑器 / AI 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；34 项编辑器 / AI 回归及 17 项侧栏回归。侧栏回归包含长文统计、主题切换的正文读取次数，以及普通模式的布局测量次数；此前记录见 [2026-10-29 验收记录](docs/audit-2026-10-29.md)。
 
 真实模型：点击底栏右侧「设置」，填写模型、密钥和思考程度，保存后即可使用选文「AI 改写」。也可手动编辑项目根目录的 `.env.local` 后重启服务。配置方式见 [AI 接入](docs/sidebar-integration.md)，真实模型验收页为 <http://127.0.0.1:43150/example/live-ai.html>。点击验收按钮会实际调用配置的模型。
 
@@ -103,7 +103,7 @@ Markdown 会被规范化，非逐字节往返。图片尺寸使用标题后缀 `
 
 重命名保存显示/导出名称，稳定 ID 和正文不变；名称元数据位于 `.data/notes/<id>.md.json`。导出的 HTML 内嵌样式、字体和本机图片，保留公式与图表。PDF 使用浏览器打印的“另存为 PDF”，不是 Electron 的原生 `printToPDF`；当前内置浏览器只验证了调用，未验证 PDF 文件保存。未使用的 Artifact 专用打开回调和重复菜单已删除。
 
-来源哈希、适配说明和字体来源位于 `packages/sidebar/src/artifact/provenance.json`。构建、类型检查、22 项 Node 测试、34 项编辑器回归及 13 项侧栏回归通过；固定数据回归与真实模型验收分别记录。
+来源哈希、适配说明和字体来源位于 `packages/sidebar/src/artifact/provenance.json`。固定数据回归与真实模型验收分别记录，测试入口和范围见上文。
 
 ## 统一白天 / 黑夜主题
 

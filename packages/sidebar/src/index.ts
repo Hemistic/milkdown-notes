@@ -29,8 +29,13 @@ export async function mountSidebar(
   if (root.childNodes.length) throw Error('Sidebar host must be empty');
   root.classList.add('mn-sidebar');
   root.innerHTML = template('mn-sidebar-' + crypto.randomUUID());
-  const $ = <T extends HTMLElement>(id: string) =>
-    root.querySelector('[data-id="' + id + '"]') as T;
+  const elements = new Map(
+    [...root.querySelectorAll<HTMLElement>('[data-id]')].map((element) => [
+      element.dataset.id!,
+      element,
+    ]),
+  );
+  const $ = <T extends HTMLElement>(id: string) => elements.get(id) as T;
   const files = options.files;
   const events = new AbortController();
   let operations: Promise<unknown> = Promise.resolve();
@@ -56,6 +61,7 @@ export async function mountSidebar(
   let notes: { id: string; title: string }[] = [];
   let readOnly = false;
   let statusText = '正在加载…';
+  let statistics = countWords('');
   let saveTask: Promise<void> | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let dirty = false;
@@ -159,6 +165,7 @@ export async function mountSidebar(
   async function mount(markdown: string) {
     await editor?.destroy();
     editor = undefined;
+    statistics = countWords('');
     renderFooter();
     editor = await mountEditor($('editor'), {
       markdown,
@@ -180,6 +187,7 @@ export async function mountSidebar(
       uploadImage: files.uploadImage ? (file) => files.uploadImage!(file) : undefined,
       resolveAsset: files.resolveAsset ? (source) => files.resolveAsset!(source) : undefined,
       onChange: (markdown) => {
+        statistics = countWords(markdown);
         dirty = true;
         revision++;
         status('待保存…');
@@ -188,8 +196,8 @@ export async function mountSidebar(
         options.onChange?.({ id, markdown });
       },
     });
+    statistics = countWords(editor.getMarkdown());
     updateOutline();
-    modes.refresh();
     renderFooter();
   }
   async function open(next: string) {
@@ -284,6 +292,7 @@ export async function mountSidebar(
   }
   function updateOutline() {
     $('outline').hidden = !outlineOpen;
+    if (!outlineOpen) return;
     const list = $('outline').querySelector('.outline-list')!;
     const headings = $('editor').querySelectorAll<HTMLElement>(
       '.ProseMirror h1,.ProseMirror h2,.ProseMirror h3,.ProseMirror h4,.ProseMirror h5,.ProseMirror h6',
@@ -311,9 +320,8 @@ export async function mountSidebar(
       locale === 'en' ? 'Outline' : '大纲';
   }
   function renderFooter() {
-    const markdown = editor?.getMarkdown() ?? '';
     footer.render({
-      ...countWords(markdown),
+      ...statistics,
       status: statusText,
       locale: locale === 'en' ? 'en' : 'zh',
       spellcheckEnabled: spellcheck,
@@ -407,10 +415,10 @@ export async function mountSidebar(
   }
   let outlineFrame = 0;
   const outlineObserver = new MutationObserver(() => {
-    if (!outlineFrame)
+    if (outlineOpen && !outlineFrame)
       outlineFrame = requestAnimationFrame(() => {
         outlineFrame = 0;
-        if (outlineOpen) updateOutline();
+        updateOutline();
       });
   });
   outlineObserver.observe($('editor'), { subtree: true, childList: true, characterData: true });

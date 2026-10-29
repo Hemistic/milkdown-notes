@@ -362,6 +362,86 @@ async function suite() {
       );
       assert(host.querySelector<HTMLElement>('.ProseMirror')!.spellcheck, '重挂丢失拼写偏好');
     });
+    await test('长文统计跟随正文更新，主题和保存状态不重复读取正文', async () => {
+      const editor = first.editor;
+      const original = editor.getMarkdown();
+      const read = editor.getMarkdown;
+      let reads = 0;
+      editor.getMarkdown = () => {
+        reads++;
+        return read();
+      };
+      try {
+        editor.setMarkdown('# 长文\n\n' + '中文 English paragraph。\n\n'.repeat(200));
+        await first.flush();
+        const markdown = read();
+        await until(() =>
+          $('left')
+            .querySelector('.status-stats')!
+            .getAttribute('aria-label')!
+            .includes(`${markdown.length} 字符`),
+        );
+        reads = 0;
+        for (let i = 0; i < 10; i++) first.setTheme(i % 2 ? 'light' : 'dark');
+        await delay(40);
+        assert(reads === 0, '主题切换重新读取了整篇正文：' + reads);
+        editor.setMarkdown('# 统计更新\n');
+        await delay(30);
+        reads = 0;
+        await first.flush();
+        assert(reads === 1, '保存状态重复读取正文：' + reads);
+      } finally {
+        editor.getMarkdown = read;
+        editor.setMarkdown(original);
+        await first.flush();
+      }
+    });
+    await test('普通模式不测量焦点布局，专注/打字机切换后仍正确定位', async () => {
+      const host = $('left');
+      const pane = host.querySelector<HTMLElement>('[data-id="editor-pane"]')!;
+      const editor = first.editor;
+      const original = editor.getMarkdown();
+      const measure = pane.getBoundingClientRect.bind(pane);
+      let measurements = 0;
+      pane.getBoundingClientRect = () => {
+        measurements++;
+        return measure();
+      };
+      const mode = (label: string) =>
+        host.querySelector<HTMLButtonElement>(`[aria-label="${label}"]`)!.click();
+      try {
+        mode('正常模式');
+        editor.setMarkdown('# 模式测试\n\n' + '用于验证光标滚动的段落。\n\n'.repeat(60));
+        await first.flush();
+        await delay(80);
+        measurements = 0;
+        for (let i = 0; i < 5; i++) {
+          document.dispatchEvent(new Event('selectionchange'));
+          await delay(20);
+        }
+        assert(measurements === 0, '普通模式仍在测量焦点布局');
+        const paragraph = host.querySelector('.ProseMirror p:last-child')!;
+        const selection = getSelection()!;
+        selection.collapse(paragraph.firstChild, 2);
+        mode('专注模式');
+        await until(() =>
+          [...host.querySelectorAll<HTMLElement>('.focus-dimmer')].some((el) => !el.hidden),
+        );
+        assert(measurements > 0, '专注模式未测量当前段落');
+        mode('打字机模式');
+        await until(() => pane.scrollTop > 0);
+        mode('正常模式');
+        assert(
+          [...host.querySelectorAll<HTMLElement>('.focus-dimmer')].every((el) => el.hidden),
+          '普通模式残留遮罩',
+        );
+      } finally {
+        mode('正常模式');
+        pane.getBoundingClientRect = measure;
+        editor.setMarkdown(original);
+        await first.flush();
+      }
+    });
     await test('文件菜单点击：重命名对话框提交到文件接口', async () => {
       const host = $('left');
       host.querySelector<HTMLButtonElement>('[data-testid="markdown-file-menu-trigger"]')!.click();

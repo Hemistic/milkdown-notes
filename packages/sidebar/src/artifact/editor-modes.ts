@@ -13,8 +13,7 @@ export function bindEditorModes(pane: HTMLElement, host: HTMLElement) {
     mask.setAttribute('aria-hidden', 'true');
     pane.parentElement!.parentElement!.append(mask);
   });
-  function blockFor(node: Node | null) {
-    const pm = host.querySelector('.ProseMirror');
+  function blockFor(node: Node | null, pm: Element | null) {
     let el = node instanceof HTMLElement ? node : (node?.parentElement ?? null);
     while (el?.parentElement && el.parentElement !== pm) el = el.parentElement;
     return el?.parentElement === pm && !el.classList.contains('prosemirror-virtual-cursor')
@@ -23,9 +22,10 @@ export function bindEditorModes(pane: HTMLElement, host: HTMLElement) {
   }
   function update() {
     frame = 0;
+    if (mode === 'normal') return;
     const selection = getSelection(),
       pm = host.querySelector('.ProseMirror');
-    const selected = blockFor(selection?.anchorNode ?? null);
+    const selected = blockFor(selection?.anchorNode ?? null, pm);
     if (selected) activeBlock = selected;
     if (!activeBlock?.isConnected)
       activeBlock =
@@ -59,11 +59,11 @@ export function bindEditorModes(pane: HTMLElement, host: HTMLElement) {
     ) {
       const range = selection.getRangeAt(0).cloneRange();
       range.collapse(true);
-      let rect = range.getClientRects()[0] || range.getBoundingClientRect();
-      if (!rect?.height)
+      let rect: DOMRect | undefined = range.getClientRects()[0] || range.getBoundingClientRect();
+      if (!rect.height)
         rect =
           pane.querySelector('.prosemirror-virtual-cursor')?.getBoundingClientRect() ||
-          activeBlock?.getBoundingClientRect()!;
+          activeBlock?.getBoundingClientRect();
       if (rect) {
         const offset = rect.top - (bounds.top + pane.clientHeight * 0.48);
         if (Math.abs(offset) > 2) pane.scrollTop += offset;
@@ -71,11 +71,9 @@ export function bindEditorModes(pane: HTMLElement, host: HTMLElement) {
     }
   }
   const schedule = () => {
-    if (!frame) frame = requestAnimationFrame(update);
+    if (mode !== 'normal' && !frame) frame = requestAnimationFrame(update);
   };
   document.addEventListener('selectionchange', schedule);
-  for (const event of ['input', 'keyup', 'compositionend', 'focusin', 'click'])
-    pane.addEventListener(event, schedule);
   // Scrolling only refreshes focus masks, never fights deliberate user scrolling.
   const scroll = () => {
     if (mode === 'focus') schedule();
@@ -83,20 +81,18 @@ export function bindEditorModes(pane: HTMLElement, host: HTMLElement) {
   pane.addEventListener('scroll', scroll);
   window.addEventListener('resize', schedule);
   const observer = new MutationObserver(schedule);
-  observer.observe(host, { childList: true, subtree: true });
+  observer.observe(host, { childList: true, characterData: true, subtree: true });
   return {
     set(value: NotesEditorMode) {
       mode = value;
       pane.parentElement!.dataset.mode = value;
+      masks.forEach((mask) => (mask.hidden = true));
       schedule();
     },
-    refresh: schedule,
     destroy() {
       cancelAnimationFrame(frame);
       observer.disconnect();
       document.removeEventListener('selectionchange', schedule);
-      for (const event of ['input', 'keyup', 'compositionend', 'focusin', 'click'])
-        pane.removeEventListener(event, schedule);
       pane.removeEventListener('scroll', scroll);
       window.removeEventListener('resize', schedule);
       masks.forEach((mask) => mask.remove());

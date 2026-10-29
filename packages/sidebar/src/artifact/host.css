@@ -27,7 +27,6 @@
     --text: var(--mn-text);
     --text-muted: var(--mn-muted);
     --accent: var(--mn-accent);
-    --accent-hover: var(--mn-accent-hover);
     --on-accent: var(--mn-on-accent);
     --danger: var(--mn-danger);
     --floating-shadow: var(--mn-shadow);
@@ -55,9 +54,6 @@
   }
   [data-id='editor'] {
     --mn-viewport-bottom: 30px;
-  }
-  [data-id='document-layout'] .paper {
-    min-height: 100%;
   }
   [data-id='statusbar-root'] {
     position: relative;
