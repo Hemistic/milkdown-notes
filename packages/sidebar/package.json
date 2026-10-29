@@ -1,0 +1,31 @@
+{
+  "name": "@local/milkdown-sidebar",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": {
+      "types": "./dist/style.css.d.ts",
+      "default": "./dist/style.css"
+    }
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "dependencies": {
+    "@local/milkdown-notes": "0.1.0",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "lucide": "1.49.0",
+    "dompurify": "3.4.17"
+  }
+}

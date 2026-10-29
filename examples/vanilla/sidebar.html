@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>侧栏接入与回归</title>
+    <link rel="stylesheet" href="/sidebar/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@local/milkdown-notes": "/editor/index.js",
+          "@local/milkdown-sidebar": "/sidebar/index.js"
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #ecebe8;
+        color: #272724;
+        font: 14px/1.6 system-ui;
+      }
+      #workbench {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .frame {
+        height: 560px;
+        border: 1px solid #b9b6ad;
+        resize: horizontal;
+        overflow: auto;
+        min-width: 200px;
+        max-width: 100%;
+      }
+      #primary {
+        width: 390px;
+      }
+      #secondary {
+        width: 300px;
+      }
+      #results {
+        max-width: 880px;
+        padding-left: 22px;
+      }
+      [data-result='pass'] {
+        color: #286638;
+      }
+      [data-result='fail'] {
+        color: #ac2c2c;
+      }
+      #suite {
+        padding: 7px 14px;
+        margin: 0 0 16px;
+      }
+      #host-button {
+        font: 17px monospace;
+        background: #d7e7f0;
+        color: #173549;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>其他软件接入侧栏</h1>
+    <p>
+      两个独立侧栏：内存文件接口、独立主题；左侧接入演示 AI
+      流，不调用真实模型。可拖动容器右下角调整宽度。
+    </p>
+    <button id="suite">运行侧栏接口回归</button>
+    <button id="host-button">宿主按钮（样式隔离）</button>
+    <p id="status" role="status">正在挂载…</p>
+    <div id="workbench">
+      <div class="frame" id="primary"><div id="left"></div></div>
+      <div class="frame" id="secondary"><div id="right"></div></div>
+    </div>
+    <ol id="results"></ol>
+    <script type="module" src="/sidebar-test.js"></script>
+  </body>
+</html>

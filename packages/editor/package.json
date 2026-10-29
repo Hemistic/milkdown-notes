@@ -16,6 +16,10 @@
     "./style.css": {
       "types": "./dist/style.css.d.ts",
       "default": "./dist/style.css"
+    },
+    "./providers": {
+      "types": "./dist/providers.d.ts",
+      "import": "./dist/providers.js"
     }
   },
   "sideEffects": [
@@ -30,7 +34,6 @@
     "micromark-util-resolve-all": "2.0.1",
     "micromark-util-chunked": "2.0.1",
     "unified": "11.0.5",
-    "remark-parse": "11.0.0",
     "@milkdown/preset-gfm": "7.22.3",
     "@milkdown/utils": "7.22.3",
     "@milkdown/prose": "7.22.3",

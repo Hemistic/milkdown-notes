@@ -5,14 +5,17 @@
   "license": "UNLICENSED",
   "type": "module",
   "workspaces": [
-    "packages/editor"
+    "packages/editor",
+    "packages/sidebar"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "dev": "node scripts/build.mjs && node apps/local/server.mjs",
     "start": "node apps/local/server.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "format": "prettier --write packages/editor/src packages/sidebar/src apps/local examples scripts tests docs README.md",
+    "format:check": "prettier --check packages/editor/src packages/sidebar/src apps/local examples scripts tests docs README.md"
   },
   "devDependencies": {
     "@codemirror/language": "6.13.1",
@@ -44,10 +47,10 @@
     "micromark-util-classify-character": "2.0.1",
     "micromark-util-resolve-all": "2.0.1",
     "micromark-util-types": "2.0.3",
+    "prettier": "3.9.10",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "remark-math": "6.0.0",
-    "remark-parse": "11.0.0",
     "typescript": "6.0.2",
     "unified": "11.0.5"
   },

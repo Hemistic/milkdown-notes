@@ -12,7 +12,8 @@
     "CSS: original statusbar/outline rules; host placement and narrow-width overflow in host.css",
     "App editor modes and Editor block-source transactions adapted to standalone lifecycle",
     "Original inline SVG paths and fonts reused; no redrawn icons",
-    "User-requested unified day/night themes: shared editor/app palette in packages/editor/src/themes.css; original footer geometry and SVG retained"
+    "User-requested unified day/night themes: shared editor/app palette in packages/editor/src/themes.css; original footer geometry and SVG retained",
+    "2026-10-29: sidebar extracted into reusable package; unused Artifact-only action and duplicate menu removed; original active SVG paths and geometry retained"
   ],
   "fontSource": "D:/Project/pdf-ai/electron/ai-sidebar/src/claudian-sidebar-style/fonts",
   "fonts": {

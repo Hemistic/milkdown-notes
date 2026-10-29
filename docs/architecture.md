@@ -1,10 +1,11 @@
 # 架构边界
 
 ```text
-apps/local/src ──→ @local/milkdown-notes (dist)
-      │                      ↑
-      └── HTTP ──→ local file storage
-examples/vanilla ─────────────┘
+apps/local/src ──→ @local/milkdown-sidebar ──→ @local/milkdown-notes
+      │                 │                         ↑
+      └─ NoteFiles ─ HTTP ──→ local file storage    │
+other hosts ── NoteFiles + AIProvider ──→ sidebar   │
+examples/vanilla ──────────────────────────────────┘
 
 packages/editor/src → Milkdown / ProseMirror
                     → CodeMirror / Lezer
@@ -14,9 +15,11 @@ packages/editor/src → Milkdown / ProseMirror
 
 `packages/editor` 拥有文档 schema、解析序列化、编辑/阅读视图、交互 UI、样式与宿主回调类型。核心不读取本地文件、不请求 MCP、不访问白板状态、不直接调用 Agent，不使用 localStorage。
 
-`apps/local` 拥有本地文件服务、笔记列表、保存队列、导入导出、主题/语言切换和资源上传。HTTP 服务使用 Node 标准库，不引入数据库或框架；`.data` 不是源码。
+`packages/sidebar` 拥有菜单、底栏、笔记列表、保存任务、导入导出、主题/语言切换。它接受 `NoteFiles` 和 `AIProvider`，不读取 localStorage，不绑定固定 API 路径。React 只用于复用原底栏，宿主可以用任意框架。
 
-`examples/vanilla` 是独立 HTML + JavaScript 集成示例，直接消费构建模块。它用 textarea 展示宿主状态、读写 API 和变化事件，并在第二个容器显示同源只读文档；不依赖独立应用的笔记 API。
+`apps/local` 实现本地文件服务，并通过 `createHttpFiles` 接入完整侧栏；负责初始欢迎笔记和偏好持久化。HTTP 服务使用 Node 标准库，不引入数据库或框架；`.data` 不是源码。
+
+`examples/vanilla` 包含单独编辑器、AI/diff 和完整侧栏示例。侧栏示例使用内存文件适配器和固定 AI 流，直接消费构建模块，验证多个宿主容器，不依赖本地应用的笔记 API。
 
 `scripts/milkdown-adapters.mjs` 是构建时兼容层，作用于精确版本的上游模块输入，不写入 node_modules。`scripts/build.mjs` 输出 ESM、按需 chunks、CSS、字体、声明与依赖许可。源代码依赖按实际 import 明确列在 package.json；锁文件是可重复安装依据。
 

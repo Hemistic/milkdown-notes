@@ -16,3 +16,5 @@ Copy the entire dist directory for direct browser ESM use, including chunks, fon
 Optional options: locale, messages, theme, readOnly, references, backlinks, onReference, onWikiLink, onLink, resolveAsset, uploadImage, aiProvider. No AI or storage service is required for basic editing. `renderMarkdown` creates a managed read-only instance of the same renderer.
 
 See the repository README and docs/integration.md for the complete contract and limits. Project distribution licensing is not yet specified; third-party notices are in dist/licenses. This package is private and has not been published.
+
+AI-enabled editors expose `editor.ai` (run, abort, accept, reject, getState). Optional HTTP providers are exported from `@local/milkdown-notes/providers`. For the full sidebar and file interface, use `@local/milkdown-sidebar`; see docs/sidebar-integration.md.

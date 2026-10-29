@@ -1,55 +1,33 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Milkdown Notes · 本地笔记</title>
-  <script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('milkdown.notes.editorPreferences')||'{}')?.theme==='dark'?'dark':'light';}catch{document.documentElement.dataset.theme='light';}</script>
-  <link rel="stylesheet" href="/editor/style.css"><link rel="stylesheet" href="/app.css">
-  <script type="importmap">{"imports":{"@local/milkdown-notes":"/editor/index.js"}}</script>
-</head>
-<body>
-  <div class="menu-anchor" id="menu-anchor">
-    <button id="menu-toggle" aria-label="笔记菜单" aria-expanded="false" aria-controls="app-menu" title="笔记菜单"><span data-icon="menu"></span></button>
-    <nav id="app-menu" aria-label="笔记功能" hidden>
-      <div class="menu-heading">Milkdown Notes<span>专注于此刻的想法</span></div>
-      <button id="new" class="menu-item"><span data-icon="new"></span><span>新建笔记</span></button>
-      <div class="menu-branch">
-        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="history-menu"><span data-icon="history"></span><span>历史笔记</span><span data-icon="chevron" class="chevron"></span></button>
-        <section id="history-menu" class="submenu" aria-label="历史笔记" hidden><div class="submenu-heading">本机保存的笔记</div><div id="notes"></div></section>
-      </div>
-      <div class="menu-divider"></div>
-      <button id="preview" class="menu-item"><span data-icon="read"></span><span class="item-label">阅读模式</span></button>
-      <button id="undo" class="menu-item"><span data-icon="undo"></span><span>撤销</span></button>
-      <button id="redo" class="menu-item"><span data-icon="redo"></span><span>重做</span></button>
-      <div class="menu-divider"></div>
-      <div class="menu-branch">
-        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="file-menu"><span data-icon="file"></span><span>导入与导出</span><span data-icon="chevron" class="chevron"></span></button>
-        <section id="file-menu" class="submenu" aria-label="导入与导出" hidden>
-          <button id="import" class="menu-item"><span data-icon="import"></span><span>导入 Markdown</span></button>
-          <button id="export" class="menu-item"><span data-icon="export"></span><span>导出 Markdown</span></button>
-        </section>
-      </div>
-      <div class="menu-branch">
-        <button class="menu-item branch-toggle" aria-expanded="false" aria-controls="settings-menu"><span data-icon="settings"></span><span>偏好设置</span><span data-icon="chevron" class="chevron"></span></button>
-        <section id="settings-menu" class="submenu" aria-label="偏好设置" hidden>
-          <div class="submenu-heading">主题</div>
-          <button id="theme-light" class="menu-item" aria-pressed="true"><span data-icon="sun"></span><span>白天主题</span><span data-icon="check" class="selected-mark"></span></button>
-          <button id="theme-dark" class="menu-item" aria-pressed="false"><span data-icon="moon"></span><span>黑夜主题</span><span data-icon="check" class="selected-mark"></span></button>
-          <div class="menu-divider"></div>
-          <div class="submenu-heading">编辑器语言</div>
-          <button id="locale-zh" class="menu-item" aria-pressed="true"><span data-icon="language"></span><span>中文</span><span data-icon="check" class="selected-mark"></span></button>
-          <button id="locale-en" class="menu-item" aria-pressed="false"><span data-icon="language"></span><span>English</span><span data-icon="check" class="selected-mark"></span></button>
-        </section>
-      </div>
-      <div class="menu-divider"></div>
-      <a class="menu-item developer-link" href="/example/"><span data-icon="code"></span><span>集成示例</span><span data-icon="external" class="chevron"></span></a>
-      <div class="menu-footer"><span data-icon="saved"></span><span id="status" role="status">正在加载…</span></div>
-    </nav>
-  </div>
-  <div id="document-layout"><aside id="outline" class="artifact-chrome outline-panel" aria-label="文档大纲" hidden><div class="outline-panel-title">大纲</div><div class="outline-list"></div></aside><main id="editor-pane"><div class="paper"><div id="editor"></div></div></main></div>
-  <div id="statusbar-root" class="artifact-chrome"></div>
-  <dialog id="rename-dialog" class="artifact-chrome"><form method="dialog"><label for="rename-name">重命名 Markdown</label><input id="rename-name" name="name" required maxlength="200" autocomplete="off"><div><button value="cancel" formnovalidate>取消</button><button value="save">保存</button></div></form></dialog>
-  <input id="file" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
-  <script type="module" src="/app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Milkdown Notes · 本地笔记</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          JSON.parse(localStorage.getItem('milkdown.notes.editorPreferences') || '{}')?.theme ===
+          'dark'
+            ? 'dark'
+            : 'light';
+      } catch {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
+    <link rel="stylesheet" href="/sidebar/style.css" />
+    <link rel="stylesheet" href="/app.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@local/milkdown-notes": "/editor/index.js",
+          "@local/milkdown-sidebar": "/sidebar/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="sidebar"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
 </html>

@@ -1,20 +1,175 @@
-import {translator,type LocaleOptions} from './locale.js';
-import {toggleMark} from '@milkdown/prose/commands';
-import {streamingPluginKey} from '@milkdown/plugin-streaming';
-import {diffPluginKey} from '@milkdown/plugin-diff';
-import {$prose} from '@milkdown/utils';import {Plugin,TextSelection} from '@milkdown/prose/state';import {TooltipProvider} from '@milkdown/plugin-tooltip';import {commandsCtx} from '@milkdown/core';import {toggleStrongCommand,toggleEmphasisCommand,toggleInlineCodeCommand} from '@milkdown/preset-commonmark';import {toggleStrikethroughCommand} from '@milkdown/preset-gfm';import {toggleLinkCommand} from '@milkdown/components/link-tooltip';import {useAIInstructionTooltipAPI} from '@milkdown/crepe/feature/ai';import type {EditorView} from '@milkdown/prose/view';import type {Ctx} from '@milkdown/ctx';import {noteUiIcon} from './note-ui-icons.js';
-export function noteSelectionToolbar(formula:(ctx:Ctx)=>void,withAi:boolean,options:LocaleOptions={}){const t=translator(options);return $prose(ctx=>{
- let provider:TooltipProvider|undefined,view:EditorView|undefined,disposed=false;const bar=document.createElement('div');bar.className='milkdown-toolbar';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label',t("选文格式"));
- const actions:{name:Parameters<typeof noteUiIcon>[0];label:string;mark?:string;run():void}[]=[
-  {name:'bold',label:t("加粗"),mark:'strong',run:()=>ctx.get(commandsCtx).call(toggleStrongCommand.key)},
-  {name:'italic',label:t("斜体"),mark:'emphasis',run:()=>ctx.get(commandsCtx).call(toggleEmphasisCommand.key)},
-  {name:'strike',label:t("删除线"),mark:'strike_through',run:()=>ctx.get(commandsCtx).call(toggleStrikethroughCommand.key)},
-  {name:'code',label:t("行内代码"),mark:'inlineCode',run:()=>ctx.get(commandsCtx).call(toggleInlineCodeCommand.key)},
-  {name:'link',label:t("链接"),mark:'link',run:()=>ctx.get(commandsCtx).call(toggleLinkCommand.key)},
-  {name:'math',label:t("行内公式"),run:()=>formula(ctx)},
-  ...([['highlight',t("高亮"),'note_highlight'],['subscript',t("下标"),'note_sub'],['superscript',t("上标"),'note_sup']] as const).map(([name,label,mark])=>({name,label,mark,run:()=>{if(view)toggleMark(view.state.schema.marks[mark])(view.state,view.dispatch);}})),
- ];if(withAi)actions.push({name:'ai',label:t("AI 改写"),run:()=>{if(view)useAIInstructionTooltipAPI(ctx).show(view.state.selection.from,view.state.selection.to);}});
- const buttons=actions.map(action=>{const button=document.createElement('button');button.type='button';button.className='toolbar-item';button.title=action.label;button.setAttribute('aria-label',action.label);button.innerHTML=noteUiIcon(action.name,action.label);button.onpointerdown=event=>{event.preventDefault();event.stopPropagation();};button.onclick=()=>{action.run();if(action.name!=='ai')view?.focus();};bar.append(button);return button;});
- const refresh=()=>{if(!view||disposed)return;const {from,to,$from}=view.state.selection;actions.forEach((action,index)=>{const mark=action.mark?view!.state.schema.marks[action.mark]:undefined,active=!!mark&&(from===to?!!mark.isInSet(view!.state.storedMarks??$from.marks()):view!.state.doc.rangeHasMark(from,to,mark));buttons[index].classList.toggle('active',active);buttons[index].setAttribute('aria-pressed',String(active));});provider?.update(view);};bar.addEventListener('focusout',()=>queueMicrotask(refresh));
- return new Plugin({props:{handleDOMEvents:{focus:()=>{queueMicrotask(refresh);return false;},blur:()=>{queueMicrotask(refresh);return false;}}},view(current){view=current;provider=new TooltipProvider({content:bar,debounce:20,offset:10,shouldShow:current=>current.editable&&!streamingPluginKey.getState(current.state)?.active&&!diffPluginKey.getState(current.state)?.active&&current.state.selection instanceof TextSelection&&!current.state.selection.empty&&(current.hasFocus()||bar.contains(document.activeElement))});refresh();return{update(next){view=next;refresh();},destroy(){disposed=true;provider?.destroy();bar.remove();view=undefined;}};}});
-});}
+import { translator, type LocaleOptions } from './locale.js';
+import { toggleMark } from '@milkdown/prose/commands';
+import { streamingPluginKey } from '@milkdown/plugin-streaming';
+import { diffPluginKey } from '@milkdown/plugin-diff';
+import { $prose } from '@milkdown/utils';
+import { Plugin, TextSelection } from '@milkdown/prose/state';
+import { TooltipProvider } from '@milkdown/plugin-tooltip';
+import { commandsCtx } from '@milkdown/core';
+import {
+  toggleStrongCommand,
+  toggleEmphasisCommand,
+  toggleInlineCodeCommand,
+} from '@milkdown/preset-commonmark';
+import { toggleStrikethroughCommand } from '@milkdown/preset-gfm';
+import { toggleLinkCommand } from '@milkdown/components/link-tooltip';
+import { useAIInstructionTooltipAPI } from '@milkdown/crepe/feature/ai';
+import type { EditorView } from '@milkdown/prose/view';
+import type { Ctx } from '@milkdown/ctx';
+import { noteUiIcon } from './note-ui-icons.js';
+export function noteSelectionToolbar(
+  formula: (ctx: Ctx) => void,
+  withAi: boolean,
+  options: LocaleOptions = {},
+) {
+  const t = translator(options);
+  return $prose((ctx) => {
+    let provider: TooltipProvider | undefined,
+      view: EditorView | undefined,
+      disposed = false;
+    const bar = document.createElement('div');
+    bar.className = 'milkdown-toolbar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', t('选文格式'));
+    const actions: {
+      name: Parameters<typeof noteUiIcon>[0];
+      label: string;
+      mark?: string;
+      run(): void;
+    }[] = [
+      {
+        name: 'bold',
+        label: t('加粗'),
+        mark: 'strong',
+        run: () => ctx.get(commandsCtx).call(toggleStrongCommand.key),
+      },
+      {
+        name: 'italic',
+        label: t('斜体'),
+        mark: 'emphasis',
+        run: () => ctx.get(commandsCtx).call(toggleEmphasisCommand.key),
+      },
+      {
+        name: 'strike',
+        label: t('删除线'),
+        mark: 'strike_through',
+        run: () => ctx.get(commandsCtx).call(toggleStrikethroughCommand.key),
+      },
+      {
+        name: 'code',
+        label: t('行内代码'),
+        mark: 'inlineCode',
+        run: () => ctx.get(commandsCtx).call(toggleInlineCodeCommand.key),
+      },
+      {
+        name: 'link',
+        label: t('链接'),
+        mark: 'link',
+        run: () => ctx.get(commandsCtx).call(toggleLinkCommand.key),
+      },
+      { name: 'math', label: t('行内公式'), run: () => formula(ctx) },
+      ...(
+        [
+          ['highlight', t('高亮'), 'note_highlight'],
+          ['subscript', t('下标'), 'note_sub'],
+          ['superscript', t('上标'), 'note_sup'],
+        ] as const
+      ).map(([name, label, mark]) => ({
+        name,
+        label,
+        mark,
+        run: () => {
+          if (view) toggleMark(view.state.schema.marks[mark])(view.state, view.dispatch);
+        },
+      })),
+    ];
+    if (withAi)
+      actions.push({
+        name: 'ai',
+        label: t('AI 改写'),
+        run: () => {
+          if (view)
+            useAIInstructionTooltipAPI(ctx).show(
+              view.state.selection.from,
+              view.state.selection.to,
+            );
+        },
+      });
+    const buttons = actions.map((action) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'toolbar-item';
+      button.title = action.label;
+      button.setAttribute('aria-label', action.label);
+      button.innerHTML = noteUiIcon(action.name, action.label);
+      button.onpointerdown = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      };
+      button.onclick = () => {
+        action.run();
+        if (action.name !== 'ai') view?.focus();
+      };
+      bar.append(button);
+      return button;
+    });
+    const refresh = () => {
+      if (!view || disposed) return;
+      const { from, to, $from } = view.state.selection;
+      actions.forEach((action, index) => {
+        const mark = action.mark ? view!.state.schema.marks[action.mark] : undefined,
+          active =
+            !!mark &&
+            (from === to
+              ? !!mark.isInSet(view!.state.storedMarks ?? $from.marks())
+              : view!.state.doc.rangeHasMark(from, to, mark));
+        buttons[index].classList.toggle('active', active);
+        buttons[index].setAttribute('aria-pressed', String(active));
+      });
+      provider?.update(view);
+    };
+    bar.addEventListener('focusout', () => queueMicrotask(refresh));
+    return new Plugin({
+      props: {
+        handleDOMEvents: {
+          focus: () => {
+            queueMicrotask(refresh);
+            return false;
+          },
+          blur: () => {
+            queueMicrotask(refresh);
+            return false;
+          },
+        },
+      },
+      view(current) {
+        view = current;
+        provider = new TooltipProvider({
+          content: bar,
+          debounce: 20,
+          offset: 10,
+          shouldShow: (current) =>
+            current.editable &&
+            !streamingPluginKey.getState(current.state)?.active &&
+            !diffPluginKey.getState(current.state)?.active &&
+            current.state.selection instanceof TextSelection &&
+            !current.state.selection.empty &&
+            (current.hasFocus() || bar.contains(document.activeElement)),
+        });
+        refresh();
+        return {
+          update(next) {
+            view = next;
+            refresh();
+          },
+          destroy() {
+            disposed = true;
+            provider?.destroy();
+            bar.remove();
+            view = undefined;
+          },
+        };
+      },
+    });
+  });
+}

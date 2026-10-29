@@ -10,16 +10,16 @@
 
 核心上游包括：
 
-| 上游 | 用途 | 已安装包声明 |
-| --- | --- | --- |
-| Milkdown / Crepe 7.22.3 | 编辑器、UI、schema、交互 | MIT |
-| ProseMirror | 编辑状态、历史、表格 | MIT |
-| CodeMirror / Lezer | 代码编辑和高亮 | MIT |
-| Mermaid 11.12.1 | 官方图表渲染 | MIT |
-| KaTeX | 公式与字体 | MIT，字体附带原声明 |
-| DOMPurify | HTML 净化 | Apache-2.0 OR MPL-2.0 |
-| Lucide | 图标 | ISC |
-| unified / remark / micromark | Markdown 处理 | 保留各包原声明 |
+| 上游                         | 用途                     | 已安装包声明          |
+| ---------------------------- | ------------------------ | --------------------- |
+| Milkdown / Crepe 7.22.3      | 编辑器、UI、schema、交互 | MIT                   |
+| ProseMirror                  | 编辑状态、历史、表格     | MIT                   |
+| CodeMirror / Lezer           | 代码编辑和高亮           | MIT                   |
+| Mermaid 11.12.1              | 官方图表渲染             | MIT                   |
+| KaTeX                        | 公式与字体               | MIT，字体附带原声明   |
+| DOMPurify                    | HTML 净化                | Apache-2.0 OR MPL-2.0 |
+| Lucide                       | 图标                     | ISC                   |
+| unified / remark / micromark | Markdown 处理            | 保留各包原声明        |
 
 精确版本、声明和许可证全文以 `licenses/dependencies.json`、`licenses/third-party/` 为准。构建从 esbuild 的实际依赖图（含懒加载块与 CSS）生成清单并保留 legal comments，复制到包的 `dist/licenses/`。没有根许可文本的包会明确标记，不能把自动清单当作法律审查结论。
 

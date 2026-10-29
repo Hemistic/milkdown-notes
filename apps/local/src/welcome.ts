@@ -1,4 +1,4 @@
-export const welcome=`# 让想法留在本地
+export const welcome = `# 让想法留在本地
 
 这是一个独立运行的 Markdown 笔记工作台。点击正文开始编辑，输入 **/** 插入内容。修改会自动保存到本机 Markdown 文件。
 

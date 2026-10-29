@@ -14,12 +14,16 @@
       "node"
     ],
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": [
     "packages/editor/src/**/*.ts",
     "apps/local/src/**/*.ts",
-    "examples/ai-test.ts",
-    "apps/local/src/**/*.tsx"
+    "apps/local/src/**/*.tsx",
+    "packages/sidebar/src/**/*.ts",
+    "packages/sidebar/src/**/*.tsx",
+    "examples/*.ts"
   ]
 }

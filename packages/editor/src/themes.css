@@ -1,38 +1,97 @@
 /* Shared day/night tokens. App chrome and editor controls use the same palette. */
-:root,.mn-note-surface,[data-theme=light]{
-  color-scheme:light;
-  --mn-page:#faf9f5;--mn-panel:#fffdfa;--mn-raised:#f2f0e9;--mn-hover:#eeebe3;
-  --mn-text:#292724;--mn-muted:#716d66;--mn-border:#dedbd2;--mn-border-strong:#c8c2b7;
-  --mn-accent:#b9573a;--mn-accent-hover:#a64a30;--mn-accent-soft:#f6e9e2;--mn-on-accent:#fffdfa;
-  --mn-danger:#b84946;--mn-selection:#ead1c4;--mn-selection-text:#32251f;
-  --mn-code-bg:#f1efe8;--mn-code-text:#454039;--mn-highlight:#f3df98;--mn-highlight-text:#453811;
-  --mn-code-keyword:#805392;--mn-code-name:#326e87;--mn-code-string:#56713c;--mn-code-number:#a45b36;--mn-code-comment:#817b70;
-  --mn-shadow:0 7px 18px rgba(31,30,29,.14);--mn-shadow-strong:0 12px 32px rgba(31,30,29,.18);
-  --mn-scrollbar:#c4bfb4;--mn-backdrop:#29272444;
+:root,
+.mn-note-surface,
+[data-theme='light'] {
+  color-scheme: light;
+  --mn-page: #faf9f5;
+  --mn-panel: #fffdfa;
+  --mn-raised: #f2f0e9;
+  --mn-hover: #eeebe3;
+  --mn-text: #292724;
+  --mn-muted: #716d66;
+  --mn-border: #dedbd2;
+  --mn-border-strong: #c8c2b7;
+  --mn-accent: #b9573a;
+  --mn-accent-hover: #a64a30;
+  --mn-accent-soft: #f6e9e2;
+  --mn-on-accent: #fffdfa;
+  --mn-danger: #b84946;
+  --mn-selection: #ead1c4;
+  --mn-selection-text: #32251f;
+  --mn-code-bg: #f1efe8;
+  --mn-code-text: #454039;
+  --mn-highlight: #f3df98;
+  --mn-highlight-text: #453811;
+  --mn-code-keyword: #805392;
+  --mn-code-name: #326e87;
+  --mn-code-string: #56713c;
+  --mn-code-number: #a45b36;
+  --mn-code-comment: #817b70;
+  --mn-shadow: 0 7px 18px rgba(31, 30, 29, 0.14);
+  --mn-shadow-strong: 0 12px 32px rgba(31, 30, 29, 0.18);
+  --mn-scrollbar: #c4bfb4;
+  --mn-backdrop: #29272444;
 }
-[data-theme=dark],[data-theme=dark] .mn-note-surface:not([data-theme=light]),.theme-dark .mn-note-surface:not([data-theme=light]){
-  color-scheme:dark;
-  --mn-page:#262624;--mn-panel:#2c2c2a;--mn-raised:#32322f;--mn-hover:#383731;
-  --mn-text:#f2f0e9;--mn-muted:#b4b0a5;--mn-border:#42413c;--mn-border-strong:#5a574f;
-  --mn-accent:#de947a;--mn-accent-hover:#edac94;--mn-accent-soft:#49352e;--mn-on-accent:#211f1b;
-  --mn-danger:#f18c87;--mn-selection:#61483c;--mn-selection-text:#fff7ef;
-  --mn-code-bg:#30302d;--mn-code-text:#e4dfd3;--mn-highlight:#66552b;--mn-highlight-text:#f9e7ad;
-  --mn-code-keyword:#c4a1d5;--mn-code-name:#8cbccd;--mn-code-string:#b4c68e;--mn-code-number:#e4ac82;--mn-code-comment:#a6a092;
-  --mn-shadow:0 7px 18px rgba(0,0,0,.28);--mn-shadow-strong:0 12px 32px rgba(0,0,0,.36);
-  --mn-scrollbar:#666257;--mn-backdrop:#0008;
+[data-theme='dark'],
+[data-theme='dark'] .mn-note-surface:not([data-theme='light']),
+.theme-dark .mn-note-surface:not([data-theme='light']) {
+  color-scheme: dark;
+  --mn-page: #262624;
+  --mn-panel: #2c2c2a;
+  --mn-raised: #32322f;
+  --mn-hover: #383731;
+  --mn-text: #f2f0e9;
+  --mn-muted: #b4b0a5;
+  --mn-border: #42413c;
+  --mn-border-strong: #5a574f;
+  --mn-accent: #de947a;
+  --mn-accent-hover: #edac94;
+  --mn-accent-soft: #49352e;
+  --mn-on-accent: #211f1b;
+  --mn-danger: #f18c87;
+  --mn-selection: #61483c;
+  --mn-selection-text: #fff7ef;
+  --mn-code-bg: #30302d;
+  --mn-code-text: #e4dfd3;
+  --mn-highlight: #66552b;
+  --mn-highlight-text: #f9e7ad;
+  --mn-code-keyword: #c4a1d5;
+  --mn-code-name: #8cbccd;
+  --mn-code-string: #b4c68e;
+  --mn-code-number: #e4ac82;
+  --mn-code-comment: #a6a092;
+  --mn-shadow: 0 7px 18px rgba(0, 0, 0, 0.28);
+  --mn-shadow-strong: 0 12px 32px rgba(0, 0, 0, 0.36);
+  --mn-scrollbar: #666257;
+  --mn-backdrop: #0008;
 }
-.mn-note-surface{
-  --crepe-color-background:var(--mn-page);--crepe-color-on-background:var(--mn-text);
-  --crepe-color-surface:var(--mn-code-bg);--crepe-color-surface-low:var(--mn-panel);
-  --crepe-color-on-surface:var(--mn-text);--crepe-color-on-surface-variant:var(--mn-muted);
-  --crepe-color-hover:var(--mn-hover);--crepe-color-selected:var(--mn-selection);--mn-note-selection-text:var(--mn-selection-text);
-  --crepe-color-outline:var(--mn-border-strong);--crepe-color-primary:var(--mn-accent);
-  --crepe-color-secondary:var(--mn-accent-soft);--crepe-color-on-secondary:var(--mn-accent);
-  --crepe-color-inverse:var(--mn-text);--crepe-color-on-inverse:var(--mn-page);
-  --crepe-color-inline-code:var(--mn-code-text);--crepe-color-error:var(--mn-danger);
-  --crepe-shadow-1:var(--mn-shadow);--crepe-shadow-2:var(--mn-shadow-strong);
-  --crepe-font-title:var(--mn-font-ui,system-ui,sans-serif);--crepe-font-default:var(--mn-font-ui,system-ui,sans-serif);
-  --crepe-font-code:'Cascadia Mono',Consolas,ui-monospace,monospace;
-  --note-code-keyword:var(--mn-code-keyword);--note-code-name:var(--mn-code-name);--note-code-string:var(--mn-code-string);--note-code-number:var(--mn-code-number);--note-code-comment:var(--mn-code-comment);
-  position:relative;
+.mn-note-surface {
+  --crepe-color-background: var(--mn-page);
+  --crepe-color-on-background: var(--mn-text);
+  --crepe-color-surface: var(--mn-code-bg);
+  --crepe-color-surface-low: var(--mn-panel);
+  --crepe-color-on-surface: var(--mn-text);
+  --crepe-color-on-surface-variant: var(--mn-muted);
+  --crepe-color-hover: var(--mn-hover);
+  --crepe-color-selected: var(--mn-selection);
+  --mn-note-selection-text: var(--mn-selection-text);
+  --crepe-color-outline: var(--mn-border-strong);
+  --crepe-color-primary: var(--mn-accent);
+  --crepe-color-secondary: var(--mn-accent-soft);
+  --crepe-color-on-secondary: var(--mn-accent);
+  --crepe-color-inverse: var(--mn-text);
+  --crepe-color-on-inverse: var(--mn-page);
+  --crepe-color-inline-code: var(--mn-code-text);
+  --crepe-color-error: var(--mn-danger);
+  --crepe-shadow-1: var(--mn-shadow);
+  --crepe-shadow-2: var(--mn-shadow-strong);
+  --crepe-font-title: var(--mn-font-ui, system-ui, sans-serif);
+  --crepe-font-default: var(--mn-font-ui, system-ui, sans-serif);
+  --crepe-font-code: 'Cascadia Mono', Consolas, ui-monospace, monospace;
+  --note-code-keyword: var(--mn-code-keyword);
+  --note-code-name: var(--mn-code-name);
+  --note-code-string: var(--mn-code-string);
+  --note-code-number: var(--mn-code-number);
+  --note-code-comment: var(--mn-code-comment);
+  position: relative;
 }
