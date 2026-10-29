@@ -77,7 +77,10 @@ test('AI settings save takes effect without restart and never returns the API ke
     body: JSON.stringify({ model: 'settings-test', reasoningEffort: 'high', apiKey: '' }),
   });
   assert.equal((await unchanged.json()).keyConfigured, true);
-  assert.equal((await request('/api/ai/settings')).status, 200);
+  const saved = await (await request('/api/ai/settings')).json();
+  const updated = await (await request('/api/ai')).json();
+  assert.equal(updated.model, saved.model);
+  assert.equal(updated.reasoningEffort, 'high');
 });
 
 test('HTTP note creation, overwrite, rename and reads preserve the stable ID', async () => {

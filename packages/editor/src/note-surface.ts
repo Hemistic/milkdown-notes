@@ -203,23 +203,20 @@ export async function createNoteSurface(
       editor.action((ctx) => {
         const view = ctx.get(editorViewCtx),
           doc = ctx.get(parserCtx)(value);
-        if (!doc) throw Error('NOTE_PARSE_FAILED');
         view.dispatch(
           view.state.tr
             .replaceWith(0, view.state.doc.content.size, doc.content)
             .setMeta('addToHistory', !options.readOnly),
         );
       });
-      markdown = value;
     },
     markdown: () => readMarkdown(),
     destroy: () => {
       if (options.aiProvider && !options.readOnly)
         editor.action((ctx) => ctx.get(commandsCtx).call(abortAICmd.key, { keep: false }));
       cleanup();
-      /* Stop DOM observers before Milkdown removes feature contexts. */ editor.action((ctx) =>
-        ctx.get(editorViewCtx).destroy(),
-      );
+      // Stop DOM observers before Milkdown removes feature contexts.
+      editor.action((ctx) => ctx.get(editorViewCtx).destroy());
       return editor.destroy();
     },
   };

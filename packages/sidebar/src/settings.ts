@@ -1,4 +1,4 @@
-import type { SidebarPreferences, SidebarAISettingsAdapter } from './types.js';
+import type { SidebarPreferences, SidebarAISettings, SidebarAISettingsAdapter } from './types.js';
 import { setIcon } from './menu.js';
 
 export function createSettings(
@@ -46,15 +46,16 @@ export function createSettings(
   const message = dialog.querySelector<HTMLElement>('.settings-message')!;
   const field = <T extends HTMLInputElement | HTMLSelectElement>(name: string) =>
     form.elements.namedItem(name) as T;
-  const aiField = (name: string) => aiForm.elements.namedItem(name) as HTMLInputElement;
+  const aiField = (name: string) =>
+    aiForm.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   const save = aiForm.querySelector<HTMLButtonElement>('button')!;
-  function sync() {
+  function syncPreferences() {
     const value = options.preferences();
     for (const name of ['theme', 'mode', 'locale'] as const) field(name).value = value[name];
     for (const name of ['outline', 'spellcheck', 'source'] as const)
       field<HTMLInputElement>(name).checked = value[name];
   }
-  function tell(text: string, failed = false) {
+  function showMessage(text: string, failed = false) {
     message.textContent = text;
     message.dataset.error = String(failed);
   }
@@ -68,15 +69,15 @@ export function createSettings(
         spellcheck: field<HTMLInputElement>('spellcheck').checked,
         source: field<HTMLInputElement>('source').checked,
       });
-      tell('编辑偏好已保存');
+      showMessage('编辑偏好已保存');
     } catch (error) {
-      tell(String(error), true);
+      showMessage(String(error), true);
     }
-    sync();
+    syncPreferences();
   };
-  function showAI(value: Awaited<ReturnType<SidebarAISettingsAdapter['load']>>) {
+  function syncAISettings(value: SidebarAISettings) {
     aiField('model').value = value.model;
-    aiField('reasoningEffort').value = value.reasoningEffort || 'medium';
+    aiField('reasoningEffort').value = value.reasoningEffort;
     aiField('apiKey').value = '';
     dialog.querySelector('.settings-service')!.textContent =
       value.provider === 'openai' ? 'OpenAI Platform' : value.provider;
@@ -87,18 +88,18 @@ export function createSettings(
   aiForm.onsubmit = async (event) => {
     event.preventDefault();
     save.disabled = true;
-    tell('正在保存 AI 设置…');
+    showMessage('正在保存 AI 设置…');
     try {
-      showAI(
+      syncAISettings(
         await options.ai!.save({
           model: aiField('model').value.trim(),
           reasoningEffort: aiField('reasoningEffort').value,
           apiKey: aiField('apiKey').value.trim(),
         }),
       );
-      tell('AI 设置已保存，下次改写生效');
+      showMessage('AI 设置已保存，下次改写生效');
     } catch (error) {
-      tell(String(error), true);
+      showMessage(String(error), true);
     } finally {
       save.disabled = false;
     }
@@ -122,8 +123,8 @@ export function createSettings(
       if (dialog.open) position();
     },
     async open() {
-      sync();
-      tell('');
+      syncPreferences();
+      showMessage('');
       position();
       dialog.showModal();
       aiForm.hidden = true;
@@ -131,14 +132,11 @@ export function createSettings(
         dialog.querySelector('.settings-service')!.textContent = 'AI 服务由接入的应用管理。';
         return;
       }
-      save.disabled = true;
       try {
-        showAI(await options.ai.load());
+        syncAISettings(await options.ai.load());
         aiForm.hidden = false;
       } catch (error) {
-        tell('读取 AI 设置失败：' + String(error), true);
-      } finally {
-        save.disabled = false;
+        showMessage('读取 AI 设置失败：' + String(error), true);
       }
     },
     destroy() {

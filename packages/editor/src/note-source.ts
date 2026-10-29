@@ -66,7 +66,7 @@ export function bindBlockSource(
       scope = host.getBoundingClientRect();
     area.style.top = rect.top - scope.top + host.scrollTop + 'px';
     area.style.left = rect.left - scope.left + 'px';
-    area.style.width = Math.max(0, rect.width) + 'px';
+    area.style.width = rect.width + 'px';
     area.style.height = '32px';
     const height = Math.max(32, area.scrollHeight);
     area.style.height = height + 'px';
@@ -99,7 +99,7 @@ export function bindBlockSource(
       )
         return;
       const pos = view.posAtDOM(block, 0);
-      const resolved = view.state.doc.resolve(Math.min(pos, view.state.doc.content.size));
+      const resolved = view.state.doc.resolve(pos);
       const index = resolved.index(0);
       const node = view.state.doc.child(index);
       let position = 0;

@@ -11,7 +11,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const envFile = process.env.NOTES_ENV_FILE ?? path.join(root, '.env.local');
 if (existsSync(envFile)) loadEnvFile(envFile);
 const aiSettings = createAISettings(envFile);
-let ai = aiSettings.provider();
 const port = Number(process.env.PORT ?? 43150);
 const storage = createStorage(process.env.NOTES_DATA_DIR ?? path.join(root, '.data'));
 await storage.init();
@@ -66,17 +65,19 @@ http
         return reply(200, aiSettings.read());
       if (route === '/api/ai/settings' && req.method === 'PATCH') {
         const value = await aiSettings.save(JSON.parse((await body(req)).toString('utf8')));
-        ai = aiSettings.provider();
         return reply(200, value);
       }
-      if (route === '/api/ai' && req.method === 'GET')
+      if (route === '/api/ai' && req.method === 'GET') {
+        const ai = aiSettings.provider();
         return reply(200, {
           configured: !!ai,
           provider: ai?.provider,
           model: ai?.model,
           reasoningEffort: ai?.reasoningEffort,
         });
+      }
       if (route === '/api/ai' && req.method === 'POST') {
+        const ai = aiSettings.provider();
         if (!ai) return reply(503, { error: '请先在底栏设置中配置 AI 模型' });
         const context = JSON.parse((await body(req)).toString('utf8'));
         if (
@@ -130,8 +131,7 @@ http
         relative = route === '/' ? 'index.html' : route.slice(1);
       }
       const target = path.resolve(base, relative);
-      if (!target.startsWith(path.resolve(base) + path.sep))
-        return reply(403, { error: 'Invalid path' });
+      if (!target.startsWith(base + path.sep)) return reply(403, { error: 'Invalid path' });
       const data = await readFile(target);
       return reply(
         200,

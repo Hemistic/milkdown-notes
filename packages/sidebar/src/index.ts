@@ -2,19 +2,26 @@ import { mountEditor, type NoteEditor, type NoteReference } from '@local/milkdow
 import { createFooter } from './artifact/footer.js';
 import { countWords } from './artifact/markdown.js';
 import { bindEditorModes } from './artifact/editor-modes.js';
-import type { NotesEditorMode } from './artifact/types.js';
-import type { MarkdownExportFormat } from './artifact/types.js';
+import type { NotesEditorMode, MarkdownExportFormat } from './artifact/types.js';
 import { download, safeName, exportHtml, printHtml } from './artifact/export.js';
 import { template } from './template.js';
 import type { SidebarOptions, NoteSidebar, SidebarPreferences } from './types.js';
-export type { SidebarOptions, NoteSidebar, SidebarPreferences, NoteExport } from './types.js';
+import { setupMenu, setIcon } from './menu.js';
+import { createSettings } from './settings.js';
+
+export type {
+  SidebarOptions,
+  NoteSidebar,
+  SidebarPreferences,
+  NoteExport,
+  SidebarAISettings,
+  SidebarAISettingsAdapter,
+} from './types.js';
 export type { MarkdownExportFormat } from './artifact/types.js';
 export { createHttpFiles } from './files.js';
 export { createHttpAIProvider } from './ai.js';
 export type { NoteFiles, NoteDocument, NoteSummary } from './files.js';
-import { setupMenu, setIcon } from './menu.js';
-import { createSettings } from './settings.js';
-export type { SidebarAISettings, SidebarAISettingsAdapter } from './types.js';
+
 export async function mountSidebar(
   root: HTMLElement,
   options: SidebarOptions,
@@ -29,28 +36,30 @@ export async function mountSidebar(
   let operations: Promise<unknown> = Promise.resolve();
   const serial = <T>(action: () => Promise<T>) => {
     const result = operations.then(action);
+    // Report failure to this caller without blocking the next queued action.
     operations = result.catch(() => {});
     return result;
   };
   const menu = setupMenu(root);
   const footer = createFooter($('statusbar-root'));
   const modes = bindEditorModes($('editor-pane'), $('editor'));
-  const preference: Partial<SidebarPreferences> = options.preferences ?? {};
-  let editorMode: NotesEditorMode = preference.mode ?? 'normal',
-    outlineOpen = preference.outline === true,
-    spellcheck = preference.spellcheck === true,
-    sourceReveal = preference.source === true,
-    statusText = '正在加载…';
-  let editor: NoteEditor | undefined,
-    id = '',
-    notes: { id: string; title: string }[] = [],
-    readOnly = false,
-    theme: 'light' | 'dark' = preference.theme === 'dark' ? 'dark' : 'light',
-    locale: 'zh-CN' | 'en' = preference.locale ?? 'zh-CN';
-  let saveTask: Promise<void> | undefined,
-    timer: ReturnType<typeof setTimeout> | undefined,
-    dirty = false,
-    revision = 0;
+  const preference = options.preferences ?? {};
+  let editorMode: NotesEditorMode = preference.mode ?? 'normal';
+  let outlineOpen = preference.outline ?? false;
+  let spellcheck = preference.spellcheck ?? false;
+  let sourceReveal = preference.source ?? false;
+  let theme = preference.theme ?? 'light';
+  let locale = preference.locale ?? 'zh-CN';
+
+  let editor: NoteEditor | undefined;
+  let id = '';
+  let notes: { id: string; title: string }[] = [];
+  let readOnly = false;
+  let statusText = '正在加载…';
+  let saveTask: Promise<void> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let dirty = false;
+  let revision = 0;
   const status = (text: string) => {
     statusText = text;
     $('status').textContent = text;
@@ -95,20 +104,19 @@ export async function mountSidebar(
     sourceReveal = value.source;
     locale = value.locale;
     if (languageChanged && editor) await mount(editor.getMarkdown());
-    syncTheme();
+    syncAppearance();
     editor?.setSpellcheck(spellcheck);
     editor?.setSourceReveal(sourceReveal);
     modes.set(editorMode);
     updateOutline();
     savePreferences();
-    renderFooter();
   }
   async function saveChanges() {
     status('正在保存…');
     while (dirty) {
-      const ticket = revision;
+      const savingRevision = revision;
       await files.write(id, editor!.getMarkdown());
-      if (revision === ticket) dirty = false;
+      if (revision === savingRevision) dirty = false;
     }
     status('已保存');
     await refresh();
@@ -230,7 +238,7 @@ export async function mountSidebar(
       status(readOnly ? '阅读模式' : '已保存');
     });
   };
-  function syncTheme() {
+  function syncAppearance() {
     root.dataset.theme = theme;
     editor?.setTheme(theme);
     $('theme-light').setAttribute('aria-pressed', String(theme === 'light'));
@@ -240,9 +248,8 @@ export async function mountSidebar(
   }
   function selectTheme(next: 'light' | 'dark') {
     theme = next;
-    syncTheme();
+    syncAppearance();
     savePreferences();
-    renderFooter();
   }
   function toggleTheme() {
     selectTheme(theme === 'light' ? 'dark' : 'light');
@@ -273,6 +280,7 @@ export async function mountSidebar(
   };
   function savePreferences() {
     options.onPreferencesChange?.(getPreferences());
+    renderFooter();
   }
   function updateOutline() {
     $('outline').hidden = !outlineOpen;
@@ -318,13 +326,11 @@ export async function mountSidebar(
         spellcheck = !spellcheck;
         editor?.setSpellcheck(spellcheck);
         savePreferences();
-        renderFooter();
       },
       onToggleOutline() {
         outlineOpen = !outlineOpen;
         updateOutline();
         savePreferences();
-        renderFooter();
       },
       onToggleTheme: toggleTheme,
       onSelectEditorMode(mode) {
@@ -333,13 +339,11 @@ export async function mountSidebar(
         updateOutline();
         modes.set(mode);
         savePreferences();
-        renderFooter();
       },
       onToggleSourceReveal() {
         sourceReveal = !sourceReveal;
         editor?.setSourceReveal(sourceReveal);
         savePreferences();
-        renderFooter();
       },
       onImportDocument: () => $<HTMLInputElement>('file').click(),
       onRenameDocument: renameDocument,
@@ -410,7 +414,7 @@ export async function mountSidebar(
       });
   });
   outlineObserver.observe($('editor'), { subtree: true, childList: true, characterData: true });
-  syncTheme();
+  syncAppearance();
   modes.set(editorMode);
   updateOutline();
   renderFooter();
