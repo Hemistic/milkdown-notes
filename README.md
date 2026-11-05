@@ -50,190 +50,29 @@ The sidebar is checked at **240, 300, 390, 650, and 900 px container widths**. T
 
 ## Markdown syntax gallery
 
-These are **actual captures from this project’s `renderMarkdown` on 2026-11-06**, with source on the left and rendered output on the right. Screenshots preserve extensions that GitHub itself does not render; each group includes copyable source. The demonstration content is in Chinese.
-
-After starting the local app, open **http://127.0.0.1:43150/example/syntax.html** to switch between five samples, edit their source, update the preview, and toggle light/dark themes. The gallery previews in memory without writing to your notes. See the [gallery implementation](examples/vanilla/syntax.js) and [all Markdown samples](examples/vanilla/syntax).
-
 ### Everyday Markdown
 
-Heading levels 1–3, bold, italic, strikethrough, inline code, quotations, ordered/unordered/nested lists, tasks, links, rules, and footnotes.
-
-![Everyday Markdown — source and actual rendering](docs/media/syntax-basics.jpg)
-
-<details>
-<summary>View copyable Markdown source</summary>
-
-<!-- prettier-ignore -->
-````markdown
-# 一页笔记，多种表达
-
-## 把思路写清楚
-
-**重要观点**、*轻声强调*、~~旧的结论~~，还有 `inline code`。
-
-> 写作是把想法变得清晰的过程。
-
-- 收集线索
-  - 整理来源
-- 形成观点
-
-1. 阅读材料
-2. 写下结论
-
-- [x] 完成初稿
-- [ ] 继续打磨
-
-### 追溯来源
-
-阅读 [Milkdown](https://milkdown.dev) 文档，保留证据。[^note]
-
----
-
-[^note]: 脚注用于补充来源与说明。
-````
-
-</details>
+![Everyday Markdown](docs/media/syntax-basics.jpg)
 
 ### Tables and highlighted code
 
-Left-, center-, and right-aligned tables with formatted cells, plus fenced code with a language label and syntax highlighting.
-
-![Tables and highlighted code — source and actual rendering](docs/media/syntax-tables-code.jpg)
-
-<details>
-<summary>View copyable Markdown source</summary>
-
-<!-- prettier-ignore -->
-````markdown
-## 用表格整理信息
-
-| 功能 | 状态 | 数量 |
-| :--- | :---: | ---: |
-| **编辑器** | 已接入 | 1 |
-| 主题 | 明／暗 | 2 |
-| `Markdown` | 可导出 | 3 |
-
-## 让代码保持可读
-
-```typescript
-import { mountEditor } from '@local/milkdown-notes';
-
-const editor = await mountEditor(element, {
-  markdown: '# Hello, Markdown',
-  onChange: (text) => save(text),
-});
-
-editor.setTheme('dark');
-```
-
-代码块保留语言标记，并显示语法高亮。
-````
-
-</details>
+![Tables and highlighted code](docs/media/syntax-tables-code.jpg)
 
 ### Math and Mermaid diagrams
 
-Inline math, an integral, a matrix, and a Mermaid flowchart rendered by this project. The flowchart illustrates Markdown content; it does not invoke an AI model.
+![Math and Mermaid diagrams](docs/media/syntax-math-diagrams.jpg)
 
-![Math and Mermaid diagrams — source and actual rendering](docs/media/syntax-math-diagrams.jpg)
+### Project-specific syntax · Light
 
-<details>
-<summary>View copyable Markdown source</summary>
+![Project-specific syntax · Light](docs/media/syntax-extensions.jpg)
 
-<!-- prettier-ignore -->
-````markdown
-## 用公式表达
+### Project-specific syntax · Dark
 
-行内公式 $E=mc^2$ 与正文一起阅读。
-
-$$
-\int_0^1 x^2\,dx=\frac{1}{3}
-$$
-
-$$
-\mathbf{A}=\begin{pmatrix}1 & 2\\3 & 4\end{pmatrix}
-$$
-
-## 把流程画出来
-
-```mermaid
-graph LR
-  A[Markdown] --> B[编辑器]
-  B --> C[AI 改写]
-  C --> D{审查差异}
-  D -->|接受| E[保存]
-  D -->|放弃| B
-```
-````
-
-</details>
-
-### Project-specific syntax
-
-An automatic `[TOC]`, `[[wiki links|display labels]]`, `==highlight==`, `H~2~O`, `x^2^`, and inline HTML such as `<kbd>`, `<u>`, and `<mark>`. Wiki-link clicks call the host’s `onWikiLink`; the gallery displays the requested target.
-
-![Project-specific syntax — source and actual rendering](docs/media/syntax-extensions.jpg)
-
-<details>
-<summary>View copyable Markdown source</summary>
-
-<!-- prettier-ignore -->
-````markdown
-# 让笔记相互连接
-
-[TOC]
-
-## 双链导航
-
-连接 [[集成指南|另一篇笔记]]，也可以写 [[研究日志]]。
-
-## 标记重点
-
-一句话中的 ==核心结论== 可以直接高亮。
-
-水分子是 H~2~O，平方写作 x^2^。
-
-## 正文 HTML
-
-用 <kbd>Ctrl</kbd> + <kbd>Z</kbd> 撤销。
-
-保留 <u>下划线</u> 与 <mark>HTML 高亮</mark>。
-````
-
-</details>
-
-<details>
-<summary>The same extensions in the dark theme</summary>
-
-![Project-specific syntax in the dark theme](docs/media/syntax-extensions-dark.jpg)
-
-</details>
+![Project-specific syntax · Dark](docs/media/syntax-extensions-dark.jpg)
 
 ### Images, captions, and sizing
 
-Standard image syntax preserves alt text and displays the title as a caption. A `{mn-ratio:0.70}` title suffix stores this project’s image sizing; other renderers can still load the image but may ignore that size. The example uses an existing screenshot of the application.
-
-![Images, captions, and sizing — source and actual rendering](docs/media/syntax-images.jpg)
-
-<details>
-<summary>View copyable Markdown source</summary>
-
-<!-- prettier-ignore -->
-````markdown
-## 图片也是文档的一部分
-
-![白天主题的编辑器界面](./editor-light.jpg "白天主题 · 本项目真实截图 {mn-ratio:0.70}")
-
-图片保留替代文本，并用标题显示说明。
-
-`{mn-ratio:0.70}` 是本项目的尺寸元数据，放在图片标题末尾。
-
-普通 Markdown 阅读器仍可显示原始图片；这个扩展不占用 alt 文本。
-````
-
-</details>
-
-> `@` references, backlinks, and AI diff review are host-integrated interactions, not standalone Markdown syntax. See the integration and AI review sections below.
+![Images, captions, and sizing](docs/media/syntax-images.jpg)
 
 ## What works today
 
