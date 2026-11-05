@@ -107,7 +107,7 @@ export function editableNoteEditor(
       confirmButton: icon('confirm', t('确认链接')),
       linkIcon: icon('copy', t('复制链接')),
     });
-  if (options.aiProvider)
+  if (options.aiProvider || options.review)
     builder.addFeature(ai, {
       provider: async function* (context, signal) {
         host.querySelector('.mn-note-ai-error')?.remove();

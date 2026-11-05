@@ -1,3 +1,7 @@
+import { Selection } from '@milkdown/prose/state';
+import { commandsCtx } from '@milkdown/core';
+import { acceptAllDiffsCmd, clearDiffReviewCmd } from '@milkdown/plugin-diff';
+export type { NoteReview, NoteReviewResult } from './review.js';
 import { bindNoteAI, type NoteAI } from './ai.js';
 import { registerLocale } from './locale.js';
 import { createNoteSurface } from './note-surface.js';
@@ -24,6 +28,10 @@ export type EditorOptions = NoteEditingOptions & {
 export interface NoteEditor {
   readonly ai?: NoteAI;
   getMarkdown(): string;
+  getViewState(): {selection: unknown; scrollTop: number};
+  restoreViewState(state: {selection?: unknown; scrollTop?: number}): void;
+  acceptReview(): void;
+  rejectReview(): void;
   /** Replace the document as one undoable change. */
   setMarkdown(markdown: string): void;
   onChange(listener: (markdown: string) => void): () => void;
@@ -92,6 +100,15 @@ export async function mountEditor(
   };
   return {
     ai: options.aiProvider && !options.readOnly ? bindNoteAI(surface.editor) : undefined,
+    getViewState() {
+      return surface.editor.action(ctx => ({ selection: ctx.get(editorViewCtx).state.selection.toJSON(), scrollTop: host.parentElement?.scrollTop ?? 0 }));
+    },
+    restoreViewState(state) {
+      surface.editor.action(ctx => { const view = ctx.get(editorViewCtx); if (state.selection) view.dispatch(view.state.tr.setSelection(Selection.fromJSON(view.state.doc, state.selection))); });
+      if (host.parentElement) host.parentElement.scrollTop = state.scrollTop ?? 0;
+    },
+    acceptReview() { surface.editor.action(ctx => ctx.get(commandsCtx).call(acceptAllDiffsCmd.key)); },
+    rejectReview() { surface.editor.action(ctx => ctx.get(commandsCtx).call(clearDiffReviewCmd.key)); },
     getMarkdown() {
       return surface.markdown();
     },

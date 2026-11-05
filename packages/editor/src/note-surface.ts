@@ -1,3 +1,4 @@
+import { noteReviewPlugin } from './review.js';
 import { headingIdGenerator } from '@milkdown/preset-commonmark';
 import { noteTableKeyboard } from './note-table.js';
 import { configureNoteImages } from './note-image.js';
@@ -108,6 +109,10 @@ export async function createNoteSurface(
           };
           return {
             update: (view, previous) => {
+              const phase = streamingPluginKey.getState(view.state)?.active ? 'streaming' : diffPluginKey.getState(view.state)?.active ? 'review' : 'idle';
+              const oldPhase = streamingPluginKey.getState(previous)?.active ? 'streaming' : diffPluginKey.getState(previous)?.active ? 'review' : 'idle';
+              if (phase !== oldPhase) options.onAIStateChange?.(phase);
+              if (options.review) return;
               if (
                 options.readOnly ||
                 busy(view.state) ||
@@ -171,6 +176,7 @@ export async function createNoteSurface(
     .use(noteExtensionPlugins(host))
     .use(noteHtmlPlugins)
     .use(noteTableKeyboard(options));
+  if (options.review) editor.use($prose(ctx => noteReviewPlugin(ctx, options.review!, options.onReviewChoice ?? (() => {}), options.onReviewResult ?? (() => {}))));
   if (options.highlights?.length) editor.use(evidence);
   await editor.remove(strikethroughInputRule);
   await editor.create();

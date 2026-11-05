@@ -6,6 +6,10 @@ import { $prose } from '@milkdown/utils';
 import type { AIProvider } from '@milkdown/crepe/feature/ai';
 export type NoteReference = { id: string; label: string; kind: string };
 export type NoteEditingOptions = {
+  review?: import('./review.js').NoteReview;
+  onReviewResult?: (result: import('./review.js').NoteReviewResult) => void;
+  onReviewChoice?: (id: string, value: string) => void;
+  onAIStateChange?: (phase: 'idle' | 'streaming' | 'review') => void;
   references?: () => NoteReference[];
   backlinks?: () => NoteReference[];
   onReference?: (reference: NoteReference) => void | Promise<void>;
