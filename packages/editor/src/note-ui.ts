@@ -121,7 +121,7 @@ export function editableNoteEditor(
       submitButtonLabel: t('开始改写'),
       listboxLabel: t('AI 改写方式'),
       streamingIndicator: { fallbackLabel: t('等待 AI 改写'), cancelHint: t('Esc 停止并保留') },
-      diff: { acceptLabel: t('接受'), rejectLabel: t('放弃') },
+      diff: { acceptLabel: t('接受'), rejectLabel: t('放弃'), customBlockTypes: ['image-block','code_block','note_math_inline','note_math_block'] },
       diffActions: {
         retryLabel: t('重新改写'),
         rejectAllLabel: t('放弃全部'),

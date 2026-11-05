@@ -26,7 +26,7 @@ function images(doc: ProseNode, assets: Record<string, string>) : ProseNode {
 // diffComponent decorations, per-change accept/reject commands and hover UI.
 // We feed it parsed rich documents, exactly as its AI streaming hand-off does.
 // There is no source diff or independent diff algorithm in this adapter.
-export function noteReviewPlugin(ctx: Ctx, review: NoteReview,
+export function noteReviewPlugin(ctx: Ctx, host: HTMLElement, review: NoteReview,
   decide: (id: string, value: string) => void, report: (result: NoteReviewResult) => void) {
   let started = false, initialCount = 0
   const restore = Object.fromEntries([...Object.entries(review.assetsBefore || {}), ...Object.entries(review.assetsAfter || {})].filter(([, url]) => url).map(([href, url]) => [url, href]))
@@ -81,7 +81,7 @@ export function noteReviewPlugin(ctx: Ctx, review: NoteReview,
     },
     view: view => {
       let disposed = false
-      document.body.dataset.documentReview = review.mode
+      host.dataset.noteReview = review.mode
       const publish = () => {
         const diff = diffPluginKey.getState(view.state)
         const pending = diff ? getPendingChanges(diff).length : 0
@@ -95,10 +95,10 @@ export function noteReviewPlugin(ctx: Ctx, review: NoteReview,
         ctx.get(commandsCtx).call(startDiffReviewFromDocCmd.key, target)
         initialCount = diffPluginKey.getState(view.state)?.changes.length || 0
         if (!initialCount) ctx.get(commandsCtx).call(clearDiffReviewCmd.key)
-        started = true; document.body.dataset.documentDiff = 'milkdown'; publish()
+        started = true; host.dataset.noteDiff = 'milkdown'; publish()
       })
       return { update: (_, previous) => { if (started && (previous.doc !== view.state.doc || diffPluginKey.getState(previous) !== diffPluginKey.getState(view.state))) publish() },
-        destroy: () => { disposed = true; delete document.body.dataset.documentReview; delete document.body.dataset.documentDiff } }
+        destroy: () => { disposed = true; delete host.dataset.noteReview; delete host.dataset.noteDiff } }
     },
   })
 }

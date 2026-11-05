@@ -1092,3 +1092,6 @@
 .mn-note-menu-layer.milkdown .milkdown-slash-menu .tab-group ul {
   flex-wrap: wrap;
 }
+[data-note-review="readonly"] .milkdown-diff-controls { display:none !important; }
+
+.mn-note-surface .milkdown-diff-controls.mn-diff-controls-visible {display:flex !important; position:fixed; z-index:9999; opacity:1; visibility:visible; pointer-events:auto;}

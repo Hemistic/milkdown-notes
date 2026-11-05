@@ -1,3 +1,4 @@
+import { installDiffReviewHoverControls } from './diff-hover.js';
 import { noteReviewPlugin } from './review.js';
 import { headingIdGenerator } from '@milkdown/preset-commonmark';
 import { noteTableKeyboard } from './note-table.js';
@@ -176,15 +177,17 @@ export async function createNoteSurface(
     .use(noteExtensionPlugins(host))
     .use(noteHtmlPlugins)
     .use(noteTableKeyboard(options));
-  if (options.review) editor.use($prose(ctx => noteReviewPlugin(ctx, options.review!, options.onReviewChoice ?? (() => {}), options.onReviewResult ?? (() => {}))));
+  if (options.review) editor.use($prose(ctx => noteReviewPlugin(ctx, host, options.review!, options.onReviewChoice ?? (() => {}), options.onReviewResult ?? (() => {}))));
   if (options.highlights?.length) editor.use(evidence);
   await editor.remove(strikethroughInputRule);
   await editor.create();
   editor.action((ctx) => titleChanged(ctx.get(editorViewCtx).state.doc));
+  const hoverCleanup = installDiffReviewHoverControls(host);
   const uiCleanup = bindNoteUi(host, options, headingPrefix),
     extensionCleanup = bindNoteExtensions(host, options),
     responsiveCleanup = bindResponsiveEditor(host);
   const cleanup = () => {
+    hoverCleanup();
     responsiveCleanup();
     uiCleanup();
     extensionCleanup();

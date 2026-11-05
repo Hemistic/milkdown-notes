@@ -18,7 +18,18 @@ function mathNode(block: boolean) {
     marks: '',
     code: true,
     isolating: true,
-    toDOM: () => [tag, { 'data-note-math': id }, ['span', { class: 'mn-note-math-source' }, 0]],
+    toDOM: (node) => {
+      // Diff decorations serialize detached nodes without mounting a node view.
+      // Supply the same preview there, while parsing only the original source.
+      const dom = document.createElement(tag), source = document.createElement('span'), preview = document.createElement('span');
+      dom.dataset.noteMath = id;
+      dom.className = 'mn-note-math' + (block ? ' mn-note-math-block' : '');
+      source.className = 'mn-note-math-source';
+      preview.className = 'mn-note-math-preview';
+      preview.innerHTML = katex.renderToString(node.textContent, {displayMode:block, throwOnError:false});
+      dom.append(source, preview);
+      return {dom, contentDOM:source};
+    },
     parseDOM: [
       { tag: tag + '[data-note-math="' + id + '"]', contentElement: '.mn-note-math-source' },
     ],
