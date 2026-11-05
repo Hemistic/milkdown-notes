@@ -1,12 +1,12 @@
 # 来源、归属与许可证状态
 
-此工程由用户已有的 Artinfact 0.13.41 Milkdown 笔记实现提取，暂用 `milkdown-notes` / `@local/milkdown-notes`。它不是 Milkdown 官方产品。没有选择新的开源许可证，没有公开远程仓库，没有发布软件包。
+此工程由用户已有的 Artinfact 0.13.41 Milkdown 笔记实现提取，暂用 `milkdown-notes` / `@local/milkdown-notes`。它不是 Milkdown 官方产品。2026-11-05 按项目所有者要求公开到 GitHub；没有选择新的项目整体开源许可证，也没有发布 npm 软件包。
 
-提取源为 `C:/Users/41448/AppData/Local/Temp/artinfact-0.13.16-work`；已安装插件只作为版本背景，没有修改缓存。`docs/source-manifest.json` 记录原始输入文件的 SHA-256；模块文件经过宿主解耦、命名空间更名和 API 包装，不代表与原文件逐字相同。原报告/截图没有当作新项目的验收证据。
+提取源为本机 Artinfact 工作副本；已安装插件只作为版本背景，没有修改缓存。`docs/source-manifest.json` 记录原始输入文件的 SHA-256；模块文件经过宿主解耦、命名空间更名和 API 包装，不代表与原文件逐字相同。原报告/截图没有当作新项目的验收证据。
 
-源工程根 `LICENSE` 开头明确写的是 Corporation for Digital Scholarship 的 Zotero pdf-reader AGPLv3 说明。该文件不足以单独确定用户编写的笔记适配代码许可，本仓库仅将其保存在 `licenses/source-root-Zotero-NOT-module-license.txt` 作为来源证据。没有提取 Zotero/PDF Reader 代码，也没有据此对新模块整体选择 AGPL 或 MIT。对来源文件的许可适用范围仍需权利人明确；公开分发前必须解决这个问题。
+源工程根 `LICENSE` 开头明确写的是 Corporation for Digital Scholarship 的 Zotero pdf-reader AGPLv3 说明。该文件不足以单独确定用户编写的笔记适配代码许可，本仓库仅将其保存在 `licenses/source-root-Zotero-NOT-module-license.txt` 作为来源证据。没有提取 Zotero/PDF Reader 代码，也没有据此对新模块整体选择 AGPL 或 MIT。来源文件的许可适用范围仍以各自权利声明为准；公开仓库不代表已为这些文件新增统一开源授权。
 
-新项目元数据使用 `private: true`、`license: UNLICENSED`，表示尚未授予新的公开分发许可，不能解释为撤销第三方已有许可或宣称全部代码归本项目独占。
+包元数据保留 `private: true`（阻止意外 npm 发布）、`license: UNLICENSED`（尚未指定项目整体许可）。GitHub 仓库为 Public；这些字段不能解释为撤销第三方已有许可或宣称全部代码归本项目独占。
 
 核心上游包括：
 
@@ -25,4 +25,4 @@
 
 `remark-math@6.0.0` 的 npm 包没有携带根 license 文件，已从官方仓库对应 `6.0.0` 标签提交 `d5d0660b150810a535bbb07eac6cc96a4510aa24` 补齐 [原始 MIT 许可](https://raw.githubusercontent.com/remarkjs/remark-math/d5d0660b150810a535bbb07eac6cc96a4510aa24/license)，存于 `licenses/supplemental/remark-math.txt`。没有从第三方转载站猜测许可。
 
-如后续公开分发，先确认自有/来源代码授权范围，再补齐元数据、署名和相应分发义务；用户本轮没有授权公开发布。
+公开仓库：https://github.com/Hemistic/milkdown-notes 。第三方署名与许可文本随源码保留；如后续选择项目整体许可，应单独明确来源代码的授权范围。

@@ -1,32 +1,100 @@
+<div align="center">
+
 # Milkdown Notes
 
-一套可嵌入其他软件的 Markdown 侧栏、独立编辑器，以及使用同一套接口的本地笔记应用。暂用名称，不属于 Milkdown 官方项目。
+**English** · [简体中文](README.zh-CN.md)
 
-本仓库从 Artinfact 0.13.41 的笔记实现提取；没有携带 MCP、白板存储、宿主协议、PDF Reader、用户资料或 Agent 服务。当前是本地私有工程，未发布仓库或 npm 包，项目整体许可尚未指定。第三方许可保持各自归属，见 [来源与许可](docs/attribution.md)。
+**Reusable Markdown editing infrastructure for AI applications**
 
-## 运行
+Bring the editor, sidebar, and diff review into your own software.
 
-需要 Node.js 22.12+ 和 npm 10+；本机验收使用 Node 24.13.0 / npm 11.6.2。
+TypeScript · Milkdown / ProseMirror · Local Markdown files · Development preview
 
-```powershell
-cd D:\Project\milkdown-notes
+[Screenshots](#screenshots) · [Features](#what-works-today) · [Quick start](#quick-start) · [Integration](#integrate-with-your-software) · [AI and review](#ai-and-document-review) · [Development](#development-and-validation)
+
+</div>
+
+Readers, research tools, and AI workspaces often need the same foundations: a rich Markdown editor, file operations, streaming rewrites, and a clear way to review proposed changes.
+
+**Milkdown Notes packages those foundations into an embeddable sidebar and an independent editor.** The included local notes application uses the same public interfaces that a host application would implement. Your software supplies storage, navigation, and AI; the modules provide the editing experience.
+
+> Development preview. Browser modules and a local Node application are implemented. Packages are built from source and are not published to npm. This is an independent project, not an official Milkdown product.
+
+## Screenshots
+
+Actual captures from this project's October 2026 local validation, using demonstration documents and the Chinese interface. The theme captures predate the consolidated settings button; the settings capture shows that addition. The diff image uses a fixed test stream, not a live model call.
+
+<table>
+<tr><th width="50%">Light theme</th><th width="50%">Dark theme</th></tr>
+<tr>
+<td><img src="docs/media/theme-light.jpg" alt="Light editor with the corner menu and slim footer" width="480"></td>
+<td><img src="docs/media/theme-dark.jpg" alt="Dark editor with matching menu, document, and footer colors" width="480"></td>
+</tr>
+</table>
+
+<details>
+<summary><strong>Settings, AI diff review, and a 240 px sidebar</strong></summary>
+
+<table>
+<tr><th>Settings</th><th>AI diff review</th><th>240 px sidebar</th></tr>
+<tr>
+<td><img src="docs/media/settings.jpg" alt="Appearance, editor preferences, model, reasoning effort, and a blank API key field" width="320"></td>
+<td><img src="docs/evidence/ai-diff-sidebar.jpg" alt="Fixed-stream test showing per-change accept and reject controls" width="260"></td>
+<td><img src="docs/media/sidebar-240.jpg" alt="Actual 240-pixel sidebar with the document and footer file menu" width="240"></td>
+</tr>
+</table>
+
+</details>
+
+The sidebar is checked at **240, 300, 390, 650, and 900 px container widths**. The footer stays 30 px tall; narrow containers keep control sizes and allow the action strip to scroll horizontally. Width adaptation is tested separately from mobile-device support.
+
+## What works today
+
+| Capability                   | Implementation                                                                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Immersive sidebar**        | Top-left expandable menu, saved notes, reading mode, undo/redo, import/export, and a slim footer                                  |
+| **Rich Markdown**            | CommonMark/GFM, task lists, tables, footnotes, images, code highlighting, KaTeX, and Mermaid                                      |
+| **Knowledge-tool content**   | `[[wiki links]]`, `[TOC]`, `==highlight==`, subscript, superscript, host references and backlinks                                 |
+| **Streaming AI**             | Selection or whole-document rewrites, cancellation, retry, partial-output review, accept/reject, and undo                         |
+| **External document review** | Host-supplied before/after Markdown, candidate decisions, table annotations, versioned image assets, and read-only history        |
+| **File handling**            | Host file adapter, local Markdown autosave, stable note IDs, rename, image upload, and import                                     |
+| **Export**                   | Markdown, self-contained HTML with local assets, and browser PDF printing or a host PDF exporter                                  |
+| **Preferences**              | Light/dark themes, normal/focus/typewriter modes, outline, spelling, triple-click block source, and Chinese/English editor labels |
+| **Reusable modules**         | Framework-independent editor API, complete sidebar API, multi-instance isolation, and typed lifecycle hooks                       |
+
+## Why this project
+
+Use the complete sidebar when your application needs menus, files, and editing together. Use the editor alone when your host already owns navigation. Use the review interface when another agent or service produces a proposed document.
+
+The editor does not own your filesystem or model credentials. `NoteFiles` and `AIProvider` keep those decisions in the host. React is used internally for the footer; a React host is not required.
+
+## Quick start
+
+Requires **Node.js 22.12+** and npm. Local development has been validated on Windows; a full cross-platform/browser matrix is not yet complete.
+
+```sh
+git clone https://github.com/Hemistic/milkdown-notes.git
+cd milkdown-notes
 npm ci
 npm run build
 npm start
 ```
 
-- 本地笔记：<http://127.0.0.1:43150/>
-- 独立编辑器示例：<http://127.0.0.1:43150/example/>
-- 完整侧栏接入与回归：<http://127.0.0.1:43150/example/sidebar.html>
-- `npm run format:check`：检查源码格式。
-- `npm run dev`：构建后启动；当前不含热更新，修改后重新构建并刷新。
-- `npm run typecheck`：TypeScript 检查。
-- `npm test`：23 个测试，覆盖存储、HTTP 文件/图片服务、AI 转发/取消/断线恢复、字数统计、路径边界和上游适配。
-- 编辑器 / AI 验收：<http://127.0.0.1:43150/example/ai.html>，本地固定流式数据，无需模型账户；34 项编辑器 / AI 回归及 17 项侧栏回归。侧栏回归包含长文统计、主题切换的正文读取次数，以及普通模式的布局测量次数；此前记录见 [2026-10-29 验收记录](docs/audit-2026-10-29.md)。
+Open **http://127.0.0.1:43150/**. Basic editing works without an AI account.
 
-真实模型：点击底栏右侧「设置」，填写模型、密钥和思考程度，保存后即可使用选文「AI 改写」。也可手动编辑项目根目录的 `.env.local` 后重启服务。配置方式见 [AI 接入](docs/sidebar-integration.md)，真实模型验收页为 <http://127.0.0.1:43150/example/live-ai.html>。点击验收按钮会实际调用配置的模型。
+| Local route             | Purpose                                                           |
+| ----------------------- | ----------------------------------------------------------------- |
+| `/`                     | Local notes application                                           |
+| `/example/`             | Independent editor and read-only renderer                         |
+| `/example/sidebar.html` | Two embedded sidebars, memory-backed files, and regression checks |
+| `/example/ai.html`      | Editor and AI/diff checks using fixed streaming data              |
+| `/example/live-ai.html` | Optional real-model checks; running them consumes model quota     |
 
-笔记保存在 `.data/notes/*.md`，图片保存在 `.data/assets/`，均被 Git 忽略。标题取首个一级标题。导入会新建笔记，导出为 Markdown。更换数据目录和端口：
+`npm run dev` builds and starts the server; it does not provide hot reload. Rebuild and refresh after changing source.
+
+Notes live in `.data/notes/*.md`, name metadata in `.md.json` sidecars, and uploaded images in `.data/assets/`. These files and `.env.local` are excluded from Git. Back up both notes and assets.
+
+To choose a different data directory or port in PowerShell:
 
 ```powershell
 $env:NOTES_DATA_DIR = 'D:\MyNotes'
@@ -34,83 +102,114 @@ $env:PORT = '43151'
 npm start
 ```
 
-服务只监听 `127.0.0.1`。这是本地网页应用，需要 Node 进程运行，不是 Windows 安装包。没有云同步、实时协作或多端冲突合并。
+The server listens only on `127.0.0.1`. It is a local web application that needs a running Node process, not an installer or a cloud service.
 
-本地应用采用沉浸式布局：点击左上角图标展开功能菜单，悬停或点击历史笔记、导入与导出、偏好设置即可打开子菜单。历史笔记列出本机保存的文档。所有菜单项使用 Lucide 图标；支持方向键导航、Esc 收起以及点击正文关闭菜单。
+## Integrate with your software
 
-## 接入完整侧栏
-
-完整菜单、编辑器与底栏通过 `mountSidebar(element, {files, aiProvider})` 挂载。`NoteFiles` 统一文件读写/重命名/图片；`NoteEditor.ai` 提供改写、取消、接受和放弃 diff。宿主无需引用本地应用源码或内部 Milkdown 上下文。安装、类型定义、HTTP 契约和 PDF 交接见 [侧栏接入文档](docs/sidebar-integration.md)。
-
-## 仅接入编辑器
-
-先在本仓库构建，再在使用 Vite、Webpack 等工具的项目中安装本地目录：
+Build this repository, then install both local packages in your host project:
 
 ```sh
-npm install /absolute/path/to/milkdown-notes/packages/editor
+npm install /path/to/milkdown-notes/packages/editor /path/to/milkdown-notes/packages/sidebar
 ```
 
 ```ts
-import { mountEditor, renderMarkdown } from '@local/milkdown-notes';
-import '@local/milkdown-notes/style.css';
+import { mountSidebar, type NoteFiles } from '@local/milkdown-sidebar';
+import '@local/milkdown-sidebar/style.css';
 
-const editor = await mountEditor(document.querySelector('#note')!, {
-  markdown: '# Hello\n\nStart here.',
-  locale: 'en',
-  theme: 'light',
-  onChange: (markdown) => console.log(markdown),
-  onWikiLink: (target) => navigateToNote(target),
-  resolveAsset: (source) => resolveLocalAsset(source),
-  uploadImage: (file) => uploadToYourStorage(file),
+const files: NoteFiles = {
+  list: () => host.notes.list(),
+  read: (id) => host.notes.read(id),
+  write: (id, markdown) => host.notes.write(id, markdown),
+  rename: (id, title) => host.notes.rename(id, title),
+  uploadImage: (file) => host.images.upload(file),
+  resolveAsset: (source) => host.images.url(source),
+};
+
+const sidebar = await mountSidebar(element, {
+  files,
+  preferences: { theme: 'light' },
+  aiProvider: (context, signal) => host.ai.stream(context, signal),
+  onPreferencesChange: (value) => host.preferences.save(value),
 });
 
-editor.setMarkdown('# Updated');
-const markdown = editor.getMarkdown();
-const unsubscribe = editor.onChange((markdown) => save(markdown));
-editor.undo();
-editor.redo();
-editor.setTheme('dark');
-await editor.settled();
-unsubscribe();
-await editor.destroy();
-
-const reader = await renderMarkdown(document.querySelector('#preview')!, markdown);
-await reader.destroy();
+await sidebar.open('note-id');
+await sidebar.flush();
+// When the host unmounts this sidebar:
+await sidebar.destroy();
 ```
 
-`navigateToNote`、`resolveLocalAsset`、`uploadToYourStorage`、`save` 是宿主自己的函数，均非基础编辑的必需依赖。完整、可直接运行的示例在 [examples/vanilla](examples/vanilla)。
+`host` is your implementation, not a global supplied by the package. Use HTTP, Electron IPC, Tauri commands, or another host service. The container must be empty and have an explicit height. `write` creates or overwrites a note; renaming preserves its ID. AI and image upload are optional.
 
-无打包器时，把 `packages/editor/dist/` **整个目录**作为静态资源提供：加载 `style.css`，从 `index.js` 导入。保留 `chunks/`、`fonts/` 和许可证文件的相对位置。公式字体、Mermaid 和语法包全部来自本地安装与构建，不使用 CDN。只复制 `index.js` 会破坏懒加载资源。
+For the editor alone:
 
-## 能力与边界
+```ts
+import { mountEditor } from '@local/milkdown-notes';
+import '@local/milkdown-notes/style.css';
 
-- 相同 Milkdown schema / node views 支持编辑与只读；Markdown 导入导出、变化通知、撤销重做。
-- CommonMark/GFM：标题、列表、任务、引用、链接、图片、表格、脚注；KaTeX 正文公式。
-- `==高亮==`、`~下标~`、`^上标^`、`[[note|alias]]`、`[TOC]`、官方 Mermaid 11.12.1。
-- CodeMirror / Lezer 代码高亮与语言标签；DOMPurify 处理正文 HTML；HTML 代码块只显示源码。
-- 斜杠菜单、内容左侧加号、块拖动、选文工具栏；表格列对齐、Tab 增行和行列拖动；缩放容器内图片按比例调整。
-- 每实例中文 / 英文、消息覆盖与明暗主题；宿主负责导航、资源、持久化；AIProvider 完全可选。
+const editor = await mountEditor(element, {
+  markdown: '# Hello\n\nStart writing.',
+  locale: 'en',
+  theme: 'light',
+  onChange: (markdown) => host.notes.save(markdown),
+});
+```
 
-Markdown 会被规范化，非逐字节往返。图片尺寸使用标题后缀 `{mn-ratio:0.70}`，保留真正的 alt 与图题；其他 Markdown 阅读器能显示图片，但不会理解这个缩放约定。旧 Artinfact 数字 alt 的图片需要显式迁移，模块不会把纯数字替代文字猜成尺寸。
+Use `renderMarkdown()` for the same rich renderer in read-only mode. Without a bundler, serve the **whole** `dist` directories, including chunks, fonts, styles, and licenses. See the [sidebar contract](docs/sidebar-integration.md), [editor API](docs/integration.md), and [runnable examples](examples/vanilla).
 
-请结合 [实际验收记录](docs/verification.md) 判断已验证范围。真实 AI 的已测范围见 [GPT-6 Luna 验收](docs/live-ai-verification.md)；浏览器全矩阵、大文档性能和多人协作未验收。
+## AI and document review
 
-更多：[宿主 API](docs/integration.md) · [架构边界](docs/architecture.md) · [Milkdown 适配明细](docs/upstream-adapters.md) · [来源与许可](docs/attribution.md)
+In the local app, open **Settings** at the right of the footer. Enter the model, reasoning effort, and API key, then save. Configuration takes effect on the next request. Keys stay in the local Node service; the browser receives only configuration metadata. Available models and parameters depend on your provider account.
 
-## Artifact 快照底栏
+A host can supply its own provider:
 
-本地应用复用 Artifact Markdown 快照的 `StatusBar.tsx`、30px 底栏样式、原始 SVG 和原字体。大纲、主题、正常/专注/打字机模式、三击块源码、拼写与统计切换均已接通。文件菜单支持重命名、打开 Markdown、导出 Markdown/HTML 和浏览器 PDF 打印。窄于完整按钮组的侧栏保留按钮尺寸，通过滚轮、触控或键盘横向访问。
+```ts
+type AIProvider = (
+  context: { document: string; selection: string; instruction: string },
+  signal: AbortSignal,
+) => AsyncIterable<string>;
+```
 
-重命名保存显示/导出名称，稳定 ID 和正文不变；名称元数据位于 `.data/notes/<id>.md.json`。导出的 HTML 内嵌样式、字体和本机图片，保留公式与图表。PDF 使用浏览器打印的“另存为 PDF”，不是 Electron 的原生 `printToPDF`；当前内置浏览器只验证了调用，未验证 PDF 文件保存。未使用的 Artifact 专用打开回调和重复菜单已删除。
+Yield incremental Markdown chunks, honor the abort signal, and throw on failure. The UI handles review before saving confirmed changes. The public controller exposes `run`, `abort`, `accept`, `reject`, and `getState` on `sidebar.editor.ai`. OpenAI and Anthropic provider factories are also available through the editor's `/providers` entry.
 
-来源哈希、适配说明和字体来源位于 `packages/sidebar/src/artifact/provenance.json`。固定数据回归与真实模型验收分别记录，测试入口和范围见上文。
+For proposals generated elsewhere, `mountEditor` accepts `review`, `onReviewChoice`, and `onReviewResult`. The host supplies original/candidate documents and decides how to persist the reviewed result. Selection and scroll state can be transferred with `getViewState()` / `restoreViewState()`; undo history is not serialized. See [external review](docs/external-review.md).
 
-## 统一白天 / 黑夜主题
+## Development and validation
 
-左上角「偏好设置」可选择白天或黑夜主题，底栏日月按钮可快速切换。正文、菜单、底栏、大纲、弹窗、代码块和图表使用 `packages/editor/src/themes.css` 的同一套颜色变量；界面和正文复用原 Artifact 字体。选择会保存在本机，页面首屏就应用已保存主题。
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run format:check
+```
 
-Mermaid 图表按主题缓存，串行渲染以隔离不同实例；主题切换不修改 Markdown。HTML 导出保留当前主题和字体。主题/图表隔离包含在 34 项编辑器浏览器回归中。
+- **23 Node tests:** storage, HTTP adapters, AI streaming/cancellation/truncation, configuration, statistics, and upstream compatibility.
+- **34 editor + 17 sidebar browser checks:** run from the two local regression pages above. They use fixed streams and do not call paid models.
+- **Performance checks:** a 200-paragraph document can switch themes ten times without rereading Markdown; a save reads it once; normal mode performs no focus-layout measurement on selection changes. These are operation-count checks, not an overall speed benchmark.
+- **Real-model validation:** separately documented in [live AI verification](docs/live-ai-verification.md), including timeouts and retests. External review integration is recorded in [external review](docs/external-review.md).
 
-最近的清理范围和验证依据见 [2026-10-29 源码审计](docs/audit-2026-10-29.md)。
+```text
+milkdown-notes/
+├── packages/editor/   Rich editor, Markdown schema, AI and document review
+├── packages/sidebar/  Menus, footer, preferences, file adapter and export
+├── apps/local/        Local Node server and notes application
+├── examples/          Browser integration and regression pages
+├── tests/             Node regression checks
+├── scripts/           Build, pinned Milkdown adapters and license notices
+└── docs/              Integration, architecture, provenance and evidence
+```
 
-底栏右侧「设置」集中管理主题、正常/专注/打字机模式、编辑器语言、大纲、拼写检查、三击源码，以及 AI 模型、思考程度和密钥。编辑偏好自动保存，AI 设置点击保存后从下一次请求生效。
+## Current boundaries
+
+- Markdown is normalized on serialization; it is not a byte-for-byte source editor. Image sizing uses a documented title suffix.
+- Local persistence is designed for one active editing session. Cloud sync, collaboration, and concurrent-write conflict resolution belong to the host.
+- Browser DOM is required. There is no server-side string renderer or native Electron/Tauri packaging included.
+- PDF export uses browser printing unless a host supplies a native exporter. Saving a PDF from the embedded browser has not been fully validated.
+- Full browser/platform coverage and large-document latency benchmarks remain future work. Supporting technical documents are mostly in Chinese.
+
+## Sources and license status
+
+Extracted from the user's Artinfact 0.13.41 notes implementation, with the snapshot footer adapted separately. Source manifests, upstream adaptations, fonts, and third-party notices are preserved in [attribution](docs/attribution.md), [upstream adapters](docs/upstream-adapters.md), and [licenses](licenses/).
+
+This is a **public source repository**, not a grant of a new project-wide open-source license. Package metadata remains `UNLICENSED` and `private: true` (preventing accidental npm publication). Third-party components retain their own terms. No new MIT/AGPL license is asserted for the extracted application code.
+
+The README presentation follows the companion [ChatGPT Claude Sidebar](https://github.com/Hemistic/chatgpt-claude-sidebar): real interface captures first, followed by capabilities, setup, and host integration. The products are separate projects.

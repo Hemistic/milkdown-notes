@@ -25,4 +25,4 @@ packages/editor/src → Milkdown / ProseMirror
 
 提取时保留了便于追踪的 `note-*.ts` 文件划分，命名空间从 `wb-note` 改为 `mn-note`，清除了白板选择器与最近卡片查找。原 `note-static.ts` 中的白板可见性调度、画布事件和全局缓存没有移植；公开只读 API 与编辑器使用同一个实现。原 `note-editor.ts`、保存补丁、引用目录生成器和 AI 宿主 provider 均留在来源工程。
 
-当前取舍：框架无关的浏览器组件优先于自定义插件框架；异步 `mount/destroy` 优先于隐式全局单例；Markdown 文件优先于数据库；私有本地构建优先于发布流程。后续若做 Electron/Tauri，只需要实现存储/导航/资源适配，不应把这些逻辑放回编辑器核心。
+当前取舍：框架无关的浏览器组件优先于自定义插件框架；异步 `mount/destroy` 优先于隐式全局单例；Markdown 文件优先于数据库；源码本地构建，GitHub 公开，npm 软件包尚未发布。后续若做 Electron/Tauri，只需要实现存储/导航/资源适配，不应把这些逻辑放回编辑器核心。
