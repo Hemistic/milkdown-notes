@@ -1,0 +1,151 @@
+:root {
+  color-scheme: light;
+  --page: #f2f4f1;
+  --panel: #fff;
+  --ink: #26362f;
+  --muted: #65776b;
+  --line: #dce3dc;
+  --accent: #3e6655;
+  font:
+    14px/1.6 system-ui,
+    sans-serif;
+  color: var(--ink);
+  background: var(--page);
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #161c19;
+  --panel: #202823;
+  --ink: #e1e8df;
+  --muted: #a4b2a6;
+  --line: #37473d;
+  --accent: #a3c6ad;
+}
+body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 26px 28px 18px;
+}
+header,
+.panel-heading,
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+h1 {
+  margin: 6px 0;
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -0.5px;
+}
+.intro {
+  color: var(--muted);
+  margin: 0;
+}
+a {
+  color: var(--accent);
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 16px;
+}
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 13px;
+  cursor: pointer;
+}
+button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--panel);
+  border-color: var(--ink);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+.panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.panel-heading {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+h2 {
+  font-size: 12px;
+  margin: 0;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.panel-heading button {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+textarea {
+  display: block;
+  box-sizing: border-box;
+  border: 0;
+  background: var(--panel);
+  color: var(--ink);
+  width: 100%;
+  height: 600px;
+  padding: 20px;
+  resize: vertical;
+  font:
+    13px/1.7 Consolas,
+    monospace;
+  tab-size: 2;
+}
+#reader {
+  min-height: 600px;
+}
+footer {
+  align-items: baseline;
+  margin-top: 13px;
+  font-size: 12px;
+  color: var(--muted);
+}
+#status {
+  flex-shrink: 0;
+}
+@media (max-width: 760px) {
+  body {
+    padding: 20px 16px;
+  }
+  header,
+  footer {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  textarea {
+    height: 420px;
+  }
+}

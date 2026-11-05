@@ -10,7 +10,7 @@
 
 TypeScript · Milkdown / ProseMirror · 本地 Markdown 文件 · 开发预览
 
-[界面预览](#界面预览) · [功能清单](#当前已经有什么) · [快速开始](#快速开始) · [宿主接入](#接入自己的软件) · [AI 与审查](#ai-与文档审查) · [开发验证](#开发与验证)
+[界面预览](#界面预览) · [语法预览](#markdown-语法预览) · [功能清单](#当前已经有什么) · [快速开始](#快速开始) · [宿主接入](#接入自己的软件) · [AI 与审查](#ai-与文档审查) · [开发验证](#开发与验证)
 
 </div>
 
@@ -48,6 +48,193 @@ TypeScript · Milkdown / ProseMirror · 本地 Markdown 文件 · 开发预览
 
 侧栏已检查 **240、300、390、650、900 px 容器宽度**。底栏保持 30 px 高，窄栏保留按钮尺寸，操作区可以横向滚动访问。容器宽度适配不等同于已完成移动设备验收。
 
+## Markdown 语法预览
+
+下面是 **2026-11-06 使用本项目 `renderMarkdown` 截取的真实效果**，左侧源码、右侧渲染。GitHub 本身不支持全部扩展，因此使用截图保留实际样式；每组都附上可复制源码。
+
+本地启动后打开 **http://127.0.0.1:43150/example/syntax.html**：切换五组示例、编辑源码后点击“更新预览”，也可以切换白天／黑夜。展示页只在内存中预览，不写入你的笔记。查看[展示页实现](examples/vanilla/syntax.js)和[全部 Markdown 示例](examples/vanilla/syntax)。
+
+### 基础排版
+
+一级至三级标题、粗体、斜体、删除线、行内代码、引用、有序／无序／嵌套列表、任务、链接、分隔线和脚注。
+
+![基础排版 — 源码与实际渲染](docs/media/syntax-basics.jpg)
+
+<details>
+<summary>查看可复制的 Markdown 源码</summary>
+
+<!-- prettier-ignore -->
+````markdown
+# 一页笔记，多种表达
+
+## 把思路写清楚
+
+**重要观点**、*轻声强调*、~~旧的结论~~，还有 `inline code`。
+
+> 写作是把想法变得清晰的过程。
+
+- 收集线索
+  - 整理来源
+- 形成观点
+
+1. 阅读材料
+2. 写下结论
+
+- [x] 完成初稿
+- [ ] 继续打磨
+
+### 追溯来源
+
+阅读 [Milkdown](https://milkdown.dev) 文档，保留证据。[^note]
+
+---
+
+[^note]: 脚注用于补充来源与说明。
+````
+
+</details>
+
+### 表格与代码高亮
+
+表格支持左／中／右对齐，单元格内可以使用强调和行内代码；代码块保留语言标记。
+
+![表格与代码高亮 — 源码与实际渲染](docs/media/syntax-tables-code.jpg)
+
+<details>
+<summary>查看可复制的 Markdown 源码</summary>
+
+<!-- prettier-ignore -->
+````markdown
+## 用表格整理信息
+
+| 功能 | 状态 | 数量 |
+| :--- | :---: | ---: |
+| **编辑器** | 已接入 | 1 |
+| 主题 | 明／暗 | 2 |
+| `Markdown` | 可导出 | 3 |
+
+## 让代码保持可读
+
+```typescript
+import { mountEditor } from '@local/milkdown-notes';
+
+const editor = await mountEditor(element, {
+  markdown: '# Hello, Markdown',
+  onChange: (text) => save(text),
+});
+
+editor.setTheme('dark');
+```
+
+代码块保留语言标记，并显示语法高亮。
+````
+
+</details>
+
+### 公式与 Mermaid 图表
+
+行内公式、积分、矩阵与 Mermaid 流程图均由项目自己的渲染器显示。流程图只是 Markdown 示例，不会发起 AI 调用。
+
+![公式与 Mermaid 图表 — 源码与实际渲染](docs/media/syntax-math-diagrams.jpg)
+
+<details>
+<summary>查看可复制的 Markdown 源码</summary>
+
+<!-- prettier-ignore -->
+````markdown
+## 用公式表达
+
+行内公式 $E=mc^2$ 与正文一起阅读。
+
+$$
+\int_0^1 x^2\,dx=\frac{1}{3}
+$$
+
+$$
+\mathbf{A}=\begin{pmatrix}1 & 2\\3 & 4\end{pmatrix}
+$$
+
+## 把流程画出来
+
+```mermaid
+graph LR
+  A[Markdown] --> B[编辑器]
+  B --> C[AI 改写]
+  C --> D{审查差异}
+  D -->|接受| E[保存]
+  D -->|放弃| B
+```
+````
+
+</details>
+
+### 我们的特色语法
+
+自动目录 `[TOC]`、带显示名称的 `[[双链|别名]]`、`==高亮==`、`H~2~O`、`x^2^`，以及正文中的 `<kbd>`、`<u>`、`<mark>`。点击双链通过 `onWikiLink` 交给宿主导航；展示页会显示收到的目标名称。
+
+![我们的特色语法 — 源码与实际渲染](docs/media/syntax-extensions.jpg)
+
+<details>
+<summary>查看可复制的 Markdown 源码</summary>
+
+<!-- prettier-ignore -->
+````markdown
+# 让笔记相互连接
+
+[TOC]
+
+## 双链导航
+
+连接 [[集成指南|另一篇笔记]]，也可以写 [[研究日志]]。
+
+## 标记重点
+
+一句话中的 ==核心结论== 可以直接高亮。
+
+水分子是 H~2~O，平方写作 x^2^。
+
+## 正文 HTML
+
+用 <kbd>Ctrl</kbd> + <kbd>Z</kbd> 撤销。
+
+保留 <u>下划线</u> 与 <mark>HTML 高亮</mark>。
+````
+
+</details>
+
+<details>
+<summary>同一组特色语法的黑夜效果</summary>
+
+![黑夜主题下的特色语法](docs/media/syntax-extensions-dark.jpg)
+
+</details>
+
+### 图片、说明与尺寸扩展
+
+标准图片语法保留 alt 替代文本，标题显示为说明。标题末尾的 `{mn-ratio:0.70}` 保存本项目的图片尺寸；其他阅读器仍可加载图片，但不一定应用这个尺寸。示例图片使用仓库已有的真实界面截图。
+
+![图片、说明与尺寸扩展 — 源码与实际渲染](docs/media/syntax-images.jpg)
+
+<details>
+<summary>查看可复制的 Markdown 源码</summary>
+
+<!-- prettier-ignore -->
+````markdown
+## 图片也是文档的一部分
+
+![白天主题的编辑器界面](./editor-light.jpg "白天主题 · 本项目真实截图 {mn-ratio:0.70}")
+
+图片保留替代文本，并用标题显示说明。
+
+`{mn-ratio:0.70}` 是本项目的尺寸元数据，放在图片标题末尾。
+
+普通 Markdown 阅读器仍可显示原始图片；这个扩展不占用 alt 文本。
+````
+
+</details>
+
+> `@` 资料引用、反向链接和 AI diff 通过宿主接口提供，属于交互功能，不是独立的 Markdown 语法。接入方式见下方“宿主接入”和“AI 与文档审查”。
+
 ## 当前已经有什么
 
 | 能力                | 当前实现                                                                     |
@@ -82,13 +269,14 @@ npm start
 
 打开 **http://127.0.0.1:43150/**。基础编辑不需要 AI 账户。
 
-| 本地路径                | 用途                                     |
-| ----------------------- | ---------------------------------------- |
-| `/`                     | 本地笔记应用                             |
-| `/example/`             | 独立编辑器和只读渲染示例                 |
-| `/example/sidebar.html` | 双侧栏、内存文件接口和回归检查           |
-| `/example/ai.html`      | 固定流式数据的编辑器与 AI/diff 验收      |
-| `/example/live-ai.html` | 可选真实模型验收，点击运行会消耗模型额度 |
+| 本地路径                | 用途                                       |
+| ----------------------- | ------------------------------------------ |
+| `/`                     | 本地笔记应用                               |
+| `/example/`             | 独立编辑器和只读渲染示例                   |
+| `/example/syntax.html`  | 五组 Markdown 源码与渲染效果，支持明暗主题 |
+| `/example/sidebar.html` | 双侧栏、内存文件接口和回归检查             |
+| `/example/ai.html`      | 固定流式数据的编辑器与 AI/diff 验收        |
+| `/example/live-ai.html` | 可选真实模型验收，点击运行会消耗模型额度   |
 
 `npm run dev` 会构建并启动服务，当前没有热更新；修改源码后重新构建、刷新页面。
 

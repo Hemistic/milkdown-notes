@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Markdown 语法预览 · Milkdown Notes</title>
+    <link rel="stylesheet" href="/editor/style.css" />
+    <link rel="stylesheet" href="./syntax.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">MILKDOWN NOTES / SYNTAX GALLERY</p>
+        <h1>让 Markdown 的表达，看得见。</h1>
+        <p class="intro">左侧是可编辑源码，右侧是编辑器的真实渲染。无需 AI 配置。</p>
+      </div>
+      <a href="/">返回笔记 ↗</a>
+    </header>
+    <nav aria-label="语法分类"></nav>
+    <main>
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Markdown 源码</h2>
+          <button id="render" disabled>更新预览</button>
+        </div>
+        <textarea id="source" aria-label="Markdown 源码" spellcheck="false"></textarea>
+      </section>
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>实际渲染</h2>
+          <button id="theme" disabled>切换黑夜</button>
+        </div>
+        <div id="reader"></div>
+      </section>
+    </main>
+    <footer><span id="description"></span><span id="status" role="status">正在加载…</span></footer>
+    <script type="module" src="./syntax.js"></script>
+  </body>
+</html>
