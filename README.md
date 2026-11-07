@@ -52,27 +52,27 @@ The sidebar is checked at **240, 300, 390, 650, and 900 px container widths**. T
 
 ### Everyday Markdown
 
-![Everyday Markdown](docs/media/syntax-basics.jpg)
+![Everyday Markdown](docs/media/syntax-basics-hd.jpg)
 
 ### Tables and highlighted code
 
-![Tables and highlighted code](docs/media/syntax-tables-code.jpg)
+![Tables and highlighted code](docs/media/syntax-tables-code-hd.jpg)
 
 ### Math and Mermaid diagrams
 
-![Math and Mermaid diagrams](docs/media/syntax-math-diagrams.jpg)
+![Math and Mermaid diagrams](docs/media/syntax-math-diagrams-hd.jpg)
 
 ### Project-specific syntax · Light
 
-![Project-specific syntax · Light](docs/media/syntax-extensions.jpg)
+![Project-specific syntax · Light](docs/media/syntax-extensions-hd.jpg)
 
 ### Project-specific syntax · Dark
 
-![Project-specific syntax · Dark](docs/media/syntax-extensions-dark.jpg)
+![Project-specific syntax · Dark](docs/media/syntax-extensions-dark-hd.jpg)
 
 ### Images, captions, and sizing
 
-![Images, captions, and sizing](docs/media/syntax-images.jpg)
+![Images, captions, and sizing](docs/media/syntax-images-hd.jpg)
 
 ## What works today
 

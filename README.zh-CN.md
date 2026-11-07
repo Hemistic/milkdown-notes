@@ -52,27 +52,27 @@ TypeScript · Milkdown / ProseMirror · 本地 Markdown 文件 · 开发预览
 
 ### 基础排版
 
-![基础排版](docs/media/syntax-basics.jpg)
+![基础排版](docs/media/syntax-basics-hd.jpg)
 
 ### 表格与代码高亮
 
-![表格与代码高亮](docs/media/syntax-tables-code.jpg)
+![表格与代码高亮](docs/media/syntax-tables-code-hd.jpg)
 
 ### 公式与 Mermaid 图表
 
-![公式与 Mermaid 图表](docs/media/syntax-math-diagrams.jpg)
+![公式与 Mermaid 图表](docs/media/syntax-math-diagrams-hd.jpg)
 
 ### 特色语法 · 白天
 
-![特色语法 · 白天](docs/media/syntax-extensions.jpg)
+![特色语法 · 白天](docs/media/syntax-extensions-hd.jpg)
 
 ### 特色语法 · 黑夜
 
-![特色语法 · 黑夜](docs/media/syntax-extensions-dark.jpg)
+![特色语法 · 黑夜](docs/media/syntax-extensions-dark-hd.jpg)
 
 ### 图片、说明与尺寸扩展
 
-![图片、说明与尺寸扩展](docs/media/syntax-images.jpg)
+![图片、说明与尺寸扩展](docs/media/syntax-images-hd.jpg)
 
 ## 当前已经有什么
 
